@@ -14,8 +14,6 @@ export default function SiteLayout({ children }) {
             Home
           </NavLink>
           <NavLink to="/lottery-defense">Lottery Defense</NavLink>
-          <NavLink to="/pnc">PNC</NavLink>
-          <NavLink to="/links">Links</NavLink>
         </nav>
       </header>
 
