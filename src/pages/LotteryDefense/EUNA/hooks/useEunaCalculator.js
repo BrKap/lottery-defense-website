@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react';
-import { UNIT_LIBRARY } from "../constants/calculator/unitConstants";
-import { createUnitEntry } from '../utils/createUnitEntry';
+import { UNIT_LIBRARY } from '../../../../data/euna/calculator/unitConstants';
+import { createUnitEntry } from '../../../../core/calculator/createUnitEntry';
 import {
   calculateMockRequiredDps,
   calculateMockUnitDps
-} from "../utils/damageCalculation";
+} from "../../../../core/calculator/damageCalculation";
 
 export default function useEunaCalculator() {
   const [activeTab, setActiveTab] = useState('main');

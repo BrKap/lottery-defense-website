@@ -1,9 +1,4 @@
-import { DERIVED_STAT_KEYS, STAT_KEYS } from '../constants/calculator/mainConstants';
-import {
-  RUNE_ENCHANT_VALUE_TABLE,
-  RUNE_LAYOUTS,
-} from '../constants/calculator/runeConstants';
-import { UPGRADE_GROUP_MAP } from '../constants/calculator/spUpgradeConstants';
+import { DERIVED_STAT_KEYS, STAT_KEYS } from './statKeys';
 import { getUpgradeValue } from './spUpgradeHelpers';
 
 const DEFAULT_TORMENT_STATE = {
@@ -262,7 +257,8 @@ function getRuneAwakeningStats(rune) {
   return stats;
 }
 
-function getRuneEnchantStats(rune) {
+function getRuneEnchantStats(rune, runeConstants = {}) {
+  const enchantValueTable = runeConstants.RUNE_ENCHANT_VALUE_TABLE ?? {};
   const attackDamageLevel = toNumber(rune?.enchantAttackDamage);
   const attackSpeedLevel = toNumber(rune?.enchantAttackSpeed);
   const accelerationLevel = toNumber(rune?.enchantAcceleration);
@@ -270,12 +266,12 @@ function getRuneEnchantStats(rune) {
   const shieldReductionLevel = toNumber(rune?.enchantShieldReduction);
   const healthReductionLevel = toNumber(rune?.enchantHealthReduction);
 
-  const attackDamageValues = RUNE_ENCHANT_VALUE_TABLE[attackDamageLevel] ?? RUNE_ENCHANT_VALUE_TABLE[0];
-  const attackSpeedValues = RUNE_ENCHANT_VALUE_TABLE[attackSpeedLevel] ?? RUNE_ENCHANT_VALUE_TABLE[0];
-  const accelerationValues = RUNE_ENCHANT_VALUE_TABLE[accelerationLevel] ?? RUNE_ENCHANT_VALUE_TABLE[0];
-  const totalDamageValues = RUNE_ENCHANT_VALUE_TABLE[totalDamageLevel] ?? RUNE_ENCHANT_VALUE_TABLE[0];
-  const shieldReductionValues = RUNE_ENCHANT_VALUE_TABLE[shieldReductionLevel] ?? RUNE_ENCHANT_VALUE_TABLE[0];
-  const healthReductionValues = RUNE_ENCHANT_VALUE_TABLE[healthReductionLevel] ?? RUNE_ENCHANT_VALUE_TABLE[0];
+  const attackDamageValues = enchantValueTable[attackDamageLevel] ?? enchantValueTable[0] ?? {};
+  const attackSpeedValues = enchantValueTable[attackSpeedLevel] ?? enchantValueTable[0] ?? {};
+  const accelerationValues = enchantValueTable[accelerationLevel] ?? enchantValueTable[0] ?? {};
+  const totalDamageValues = enchantValueTable[totalDamageLevel] ?? enchantValueTable[0] ?? {};
+  const shieldReductionValues = enchantValueTable[shieldReductionLevel] ?? enchantValueTable[0] ?? {};
+  const healthReductionValues = enchantValueTable[healthReductionLevel] ?? enchantValueTable[0] ?? {};
 
   return {
     [STAT_KEYS.ATTACK_DAMAGE]: attackDamageValues.attackDamage,
@@ -287,12 +283,13 @@ function getRuneEnchantStats(rune) {
   };
 }
 
-export function calculateRuneSourceStats(runeLoadouts = []) {
+export function calculateRuneSourceStats(runeLoadouts = [], runeConstants = {}) {
   const result = createEmptySourceResult();
+  const runeLayouts = runeConstants.RUNE_LAYOUTS ?? {};
 
   runeLoadouts.forEach((rune, index) => {
     const runeType = String(rune?.runeType ?? '').toLowerCase();
-    const runeLayout = RUNE_LAYOUTS[runeType];
+    const runeLayout = runeLayouts[runeType];
 
     if (!runeType || !runeLayout) {
       return;
@@ -388,7 +385,7 @@ export function calculateRuneSourceStats(runeLoadouts = []) {
       });
     });
 
-    const enchantStats = getRuneEnchantStats(rune);
+    const enchantStats = getRuneEnchantStats(rune, runeConstants);
 
     Object.entries(enchantStats).forEach(([statKey, statValue]) => {
       if (!toNumber(statValue)) {
@@ -468,11 +465,11 @@ function applySpAcceleration(result, groupId, investedCount, upgradeValue) {
   return combineMode;
 }
 
-export function calculateSpUpgradeSourceStats(investments = {}) {
+export function calculateSpUpgradeSourceStats(investments = {}, upgradeGroupMap = {}) {
   const result = createEmptySourceResult();
 
   Object.entries(investments).forEach(([groupId, groupInvestments]) => {
-    const group = UPGRADE_GROUP_MAP[groupId];
+    const group = upgradeGroupMap[groupId];
 
     if (!group) {
       return;
@@ -667,9 +664,11 @@ export function calculateProfileStats({
   difficultyState = null,
   tormentState = null,
   buffState = null,
+  runeConstants = {},
+  upgradeGroupMap = {},
 }) {
-  const runeSource = calculateRuneSourceStats(runeLoadouts);
-  const spUpgradeSource = calculateSpUpgradeSourceStats(spInvestments);
+  const runeSource = calculateRuneSourceStats(runeLoadouts, runeConstants);
+  const spUpgradeSource = calculateSpUpgradeSourceStats(spInvestments, upgradeGroupMap);
   const difficultySource = calculateDifficultySourceStats(difficultyState);
   const tormentSource = calculateTormentSourceStats(tormentState);
   const buffSource = calculateBuffSourceStats(buffState);

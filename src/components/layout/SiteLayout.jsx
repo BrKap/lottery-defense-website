@@ -6,14 +6,13 @@ export default function SiteLayout({ children }) {
     <div className="app-shell">
       <header className="site-header">
         <div>
-          <h1>Prismatic's Website</h1>
-          <p className="site-subtitle">All of my website projects</p>
+          <h1>Lottery Defense</h1>
+          <p className="site-subtitle">Guides and calculators by version</p>
         </div>
         <nav className="top-nav" aria-label="Main navigation">
           <NavLink to="/" end>
-            Home
+            Versions
           </NavLink>
-          <NavLink to="/lottery-defense">Lottery Defense</NavLink>
         </nav>
       </header>
 

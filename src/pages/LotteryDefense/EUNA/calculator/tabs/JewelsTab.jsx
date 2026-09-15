@@ -1,10 +1,6 @@
 import React, { useMemo } from 'react';
-import {
-  JEWEL_EDITABLE_ROWS,
-  JEWEL_STAT_OPTIONS,
-  JEWEL_UPGRADE_OPTIONS,
-} from '../../constants/calculator/jewelConstants';
-import { splitJewelsByType } from '../../utils/jewelHelpers';
+import { useCalculatorConfig } from '../../../../../core/calculator/CalculatorConfigContext';
+import { splitJewelsByType } from '../../../../../core/calculator/jewelHelpers';
 
 function JewelSelect({ value, options, onChange, className = '' }) {
   return (
@@ -30,6 +26,9 @@ function JewelSelect({ value, options, onChange, className = '' }) {
 
 function JewelCard({
   jewel,
+  editableRows,
+  statOptions,
+  upgradeOptions,
   onFieldChange,
   onRemove,
 }) {
@@ -59,13 +58,13 @@ function JewelCard({
       </div>
 
       <div className="jewel-card-body">
-        {JEWEL_EDITABLE_ROWS.map((row) => (
+        {editableRows.map((row) => (
           <div key={row.key} className="jewel-row">
             <div className="jewel-row-label">{row.label}</div>
             <div className="jewel-row-value">
               <JewelSelect
                 value={jewel[row.key]}
-                options={JEWEL_STAT_OPTIONS}
+                options={statOptions}
                 onChange={(value) => onFieldChange(jewel.entryId, row.key, value)}
               />
             </div>
@@ -91,7 +90,7 @@ function JewelCard({
             <div className="jewel-row-value">
               <JewelSelect
                 value={jewel.jewelUpgrade}
-                options={JEWEL_UPGRADE_OPTIONS}
+                options={upgradeOptions}
                 onChange={(value) => onFieldChange(jewel.entryId, 'jewelUpgrade', value)}
                 className="jewel-select--upgrade"
               />
@@ -122,6 +121,13 @@ export default function JewelsTab({
   addNormalJewel,
   removeNormalJewel,
 }) {
+  const { calculator } = useCalculatorConfig();
+  const {
+    JEWEL_EDITABLE_ROWS,
+    JEWEL_STAT_OPTIONS,
+    JEWEL_UPGRADE_OPTIONS,
+  } = calculator;
+
   const { legendaryJewels, normalJewels } = useMemo(() => {
     return splitJewelsByType(jewels);
   }, [jewels]);
@@ -145,6 +151,9 @@ export default function JewelsTab({
             <JewelCard
               key={jewel.entryId}
               jewel={jewel}
+              editableRows={JEWEL_EDITABLE_ROWS}
+              statOptions={JEWEL_STAT_OPTIONS}
+              upgradeOptions={JEWEL_UPGRADE_OPTIONS}
               onFieldChange={updateJewel}
               onRemove={removeNormalJewel}
             />
@@ -162,6 +171,9 @@ export default function JewelsTab({
             <JewelCard
               key={jewel.entryId}
               jewel={jewel}
+              editableRows={JEWEL_EDITABLE_ROWS}
+              statOptions={JEWEL_STAT_OPTIONS}
+              upgradeOptions={JEWEL_UPGRADE_OPTIONS}
               onFieldChange={updateJewel}
               onRemove={removeNormalJewel}
             />

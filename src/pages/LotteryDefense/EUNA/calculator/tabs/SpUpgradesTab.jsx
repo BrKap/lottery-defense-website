@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
-import { UPGRADE_GROUPS } from '../../constants/calculator/spUpgradeConstants';
+import { useCalculatorConfig } from '../../../../../core/calculator/CalculatorConfigContext';
 import {
   calculateUpgradeTotals,
   getNextUpgradePrice,
   getTotalUpgradePrice,
   sanitizeInvestmentValue,
-} from '../../utils/spUpgradeHelpers';
+} from '../../../../../core/calculator/spUpgradeHelpers';
 
 export default function SpUpgradesTab({
   activeGroupId,
@@ -13,11 +13,13 @@ export default function SpUpgradesTab({
   investments,
   setInvestments,
 }) {
+  const { calculator } = useCalculatorConfig();
+  const { UPGRADE_GROUPS } = calculator;
   const activeGroup =
     UPGRADE_GROUPS.find((group) => group.id === activeGroupId) ?? UPGRADE_GROUPS[0];
 
   const totals = useMemo(() => {
-    return calculateUpgradeTotals(investments);
+    return calculateUpgradeTotals(investments, UPGRADE_GROUPS);
   }, [investments]);
 
   function updateInvestment(groupId, upgradeId, nextValue) {

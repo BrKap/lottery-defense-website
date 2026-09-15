@@ -1,25 +1,18 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import './styles/ld-euna-index.css';
-import { UNIT_LIBRARY } from "./constants/calculator/unitConstants";
-import {
-  RUNE_SLOTS,
-  createInitialRuneLoadouts,
-} from './constants/calculator/runeConstants';
 import {
   addNormalJewel,
   createInitialJewelsState,
   removeNormalJewel,
   updateJewelField,
-} from './utils/jewelHelpers';
-import { TAB_OPTIONS } from './constants/calculator/mainConstants';
-import { UPGRADE_GROUPS } from './constants/calculator/spUpgradeConstants';
+} from '../../../core/calculator/jewelHelpers';
 import {
   calculateMockRequiredDps,
   calculateMockUnitDps
-} from "./utils/damageCalculation";
-import { createUnitEntry } from './utils/createUnitEntry';
-import { buildInitialInvestments } from './utils/spUpgradeHelpers';
-import { calculateProfileStats } from './utils/statCalculator';
+} from "../../../core/calculator/damageCalculation";
+import { createUnitEntry } from '../../../core/calculator/createUnitEntry';
+import { buildInitialInvestments } from '../../../core/calculator/spUpgradeHelpers';
+import { calculateProfileStats } from '../../../core/calculator/statCalculator';
 import FloatingStatsPanel from './calculator/FloatingStatsPanel';
 import CalculatorHero from './calculator/CalculatorHero';
 import CalculatorTabs from './calculator/CalculatorTabs';
@@ -42,12 +35,9 @@ const INITIAL_SETTINGS = {
   sp: 0,
   gameMode: 'Standard',
   tocMode: false,
-  runeSlot: RUNE_SLOTS[0]?.value ?? 'slot-1',
+  runeSlot: 'slot-1',
   presetName: 'Default EUNA Preset',
 };
-
-const safeUnitLibrary = Array.isArray(UNIT_LIBRARY) ? UNIT_LIBRARY : [];
-const defaultUnit = safeUnitLibrary[0] ?? null;
 
 function loadSavedCalculatorState() {
   try {
@@ -64,13 +54,30 @@ function loadSavedCalculatorState() {
   }
 }
 
-function createDefaultUnits() {
+function createDefaultUnits(safeUnitLibrary) {
   return safeUnitLibrary
     .filter((_, index) => [0, 1, 3].includes(index))
     .map((unit) => createUnitEntry(unit));
 }
 
-export default function LotteryDefenseCalculatorPage() {
+export default function LotteryDefenseCalculatorPage({ versionConfig }) {
+  const calculatorConfig = versionConfig.calculator;
+  const safeUnitLibrary = Array.isArray(calculatorConfig.unitLibrary)
+    ? calculatorConfig.unitLibrary
+    : [];
+  const defaultUnit = safeUnitLibrary[0] ?? null;
+  const runeSlots = calculatorConfig.RUNE_SLOTS ?? [];
+  const upgradeGroups = calculatorConfig.UPGRADE_GROUPS ?? [];
+  const upgradeGroupMap = calculatorConfig.UPGRADE_GROUP_MAP ?? {};
+  const jewelConfig = {
+    legendaryJewels: calculatorConfig.LEGENDARY_JEWELS,
+    normalJewelDefault: calculatorConfig.NORMAL_JEWEL_DEFAULT,
+  };
+  const initialSettings = {
+    ...INITIAL_SETTINGS,
+    runeSlot: runeSlots[0]?.value ?? INITIAL_SETTINGS.runeSlot,
+  };
+
   const [activeTab, setActiveTab] = useState(() => {
     const savedState = loadSavedCalculatorState();
     return savedState?.activeTab ?? 'main';
@@ -78,7 +85,7 @@ export default function LotteryDefenseCalculatorPage() {
 
   const [jewels, setJewels] = useState(() => {
     const savedState = loadSavedCalculatorState();
-    return createInitialJewelsState(savedState?.jewels);
+    return createInitialJewelsState(savedState?.jewels, jewelConfig);
   });
 
   const [selectedUnitId, setSelectedUnitId] = useState(() => {
@@ -89,29 +96,29 @@ export default function LotteryDefenseCalculatorPage() {
   const [calculatorSettings, setCalculatorSettings] = useState(() => {
     const savedState = loadSavedCalculatorState();
     return {
-      ...INITIAL_SETTINGS,
+      ...initialSettings,
       ...(savedState?.calculatorSettings ?? {}),
     };
   });
 
   const [units, setUnits] = useState(() => {
     const savedState = loadSavedCalculatorState();
-    return savedState?.units ?? createDefaultUnits();
+    return savedState?.units ?? createDefaultUnits(safeUnitLibrary);
   });
 
   const [spActiveGroupId, setSpActiveGroupId] = useState(() => {
     const savedState = loadSavedCalculatorState();
-    return savedState?.spActiveGroupId ?? UPGRADE_GROUPS[0]?.id ?? '';
+    return savedState?.spActiveGroupId ?? upgradeGroups[0]?.id ?? '';
   });
 
   const [spInvestments, setSpInvestments] = useState(() => {
     const savedState = loadSavedCalculatorState();
-    return savedState?.spInvestments ?? buildInitialInvestments();
+    return savedState?.spInvestments ?? buildInitialInvestments(upgradeGroups);
   });
 
   const [runeLoadouts, setRuneLoadouts] = useState(() => {
     const savedState = loadSavedCalculatorState();
-    return savedState?.runeLoadouts ?? createInitialRuneLoadouts();
+    return savedState?.runeLoadouts ?? calculatorConfig.createInitialRuneLoadouts();
   });
 
   useEffect(() => {
@@ -162,7 +169,7 @@ export default function LotteryDefenseCalculatorPage() {
     };
   }, [calculatorSettings, units]);
 
-  const selectedRuneSlot = calculatorSettings.runeSlot ?? RUNE_SLOTS[0]?.value;
+  const selectedRuneSlot = calculatorSettings.runeSlot ?? runeSlots[0]?.value;
   const activeRune = runeLoadouts.find((rune) => rune.slot === selectedRuneSlot) ?? runeLoadouts[0];
 
   const addUnit = () => {
@@ -240,7 +247,7 @@ export default function LotteryDefenseCalculatorPage() {
   };
 
   const handleAddNormalJewel = () => {
-    setJewels((currentJewels) => addNormalJewel(currentJewels));
+    setJewels((currentJewels) => addNormalJewel(currentJewels, jewelConfig));
   };
 
   const handleRemoveNormalJewel = (entryId) => {
@@ -260,6 +267,8 @@ export default function LotteryDefenseCalculatorPage() {
         critDamageReduction: 0,
       },
       buffState: null,
+      runeConstants: calculatorConfig,
+      upgradeGroupMap,
     });
   }, [
     activeRune,
@@ -276,8 +285,8 @@ export default function LotteryDefenseCalculatorPage() {
 
   return (
     <section className="calculator-page">
-      <CalculatorHero settings={calculatorSettings} />
-      <CalculatorTabs tabs={TAB_OPTIONS} activeTab={activeTab} onChange={setActiveTab} />
+      <CalculatorHero settings={calculatorSettings} versionConfig={versionConfig} />
+      <CalculatorTabs tabs={calculatorConfig.TAB_OPTIONS} activeTab={activeTab} onChange={setActiveTab} />
 
       {activeTab === 'main' && (
         <MainTab

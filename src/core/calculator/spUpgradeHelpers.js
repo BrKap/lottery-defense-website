@@ -1,5 +1,3 @@
-import { UPGRADE_GROUPS, UPGRADE_GROUP_MAP } from '../constants/calculator/spUpgradeConstants';
-
 function clampLevel(level, maxInvestments) {
   const numericLevel = Number(level);
 
@@ -84,10 +82,10 @@ export function getTotalUpgradePrice(upgrade, investedCount) {
   return total;
 }
 
-export function buildInitialInvestments() {
+export function buildInitialInvestments(upgradeGroups = []) {
   const initial = {};
 
-  UPGRADE_GROUPS.forEach((group) => {
+  upgradeGroups.forEach((group) => {
     initial[group.id] = {};
 
     group.upgrades.forEach((upgrade) => {
@@ -102,13 +100,13 @@ export function sanitizeInvestmentValue(upgrade, nextValue) {
   return clampLevel(nextValue, upgrade.maxInvestments);
 }
 
-export function calculateUpgradeTotals(investments) {
+export function calculateUpgradeTotals(investments, upgradeGroups = []) {
   let totalSpOverall = 0;
   let totalEpOverall = 0;
 
   const groupTotals = {};
 
-  UPGRADE_GROUPS.forEach((group) => {
+  upgradeGroups.forEach((group) => {
     let groupTotal = 0;
 
     group.upgrades.forEach((upgrade) => {
@@ -132,10 +130,10 @@ export function calculateUpgradeTotals(investments) {
   };
 }
 
-export function getAggregateUpgradeEffects(investments) {
+export function getAggregateUpgradeEffects(investments, upgradeGroups = []) {
   const totalsByStatKey = {};
 
-  UPGRADE_GROUPS.forEach((group) => {
+  upgradeGroups.forEach((group) => {
     group.upgrades.forEach((upgrade) => {
       if (!upgrade.statKey) {
         return;
@@ -156,12 +154,15 @@ export function exportSpUpgradeState(investments) {
   return JSON.stringify(investments);
 }
 
-export function importSpUpgradeState(rawValue) {
+export function importSpUpgradeState(rawValue, upgradeGroups = [], upgradeGroupMap = null) {
   const parsed = JSON.parse(rawValue);
-  const clean = buildInitialInvestments();
+  const clean = buildInitialInvestments(upgradeGroups);
+  const groupsById =
+    upgradeGroupMap ??
+    Object.fromEntries(upgradeGroups.map((group) => [group.id, group]));
 
   Object.entries(parsed ?? {}).forEach(([groupId, groupValues]) => {
-    const group = UPGRADE_GROUP_MAP[groupId];
+    const group = groupsById[groupId];
 
     if (!group || typeof groupValues !== 'object' || groupValues === null) {
       return;

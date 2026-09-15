@@ -1,3 +1,5 @@
+export { DERIVED_STAT_KEYS, STAT_KEYS } from '../../../core/calculator/statKeys';
+
 export const DIFFICULTIES = [
   'Practice',
   'Very Easy',
@@ -38,42 +40,6 @@ export const JEWEL_OPTIONS = [
   { value: 'jewel-a', label: 'Jewel A' },
   { value: 'jewel-b', label: 'Jewel B' },
 ];
-
-export const STAT_KEYS = {
-  ATTACK_DAMAGE: 'attackDamage',
-  ATTACK_SPEED: 'attackSpeed',
-  CRIT_CHANCE: 'critChance',
-  CRIT_DAMAGE: 'critDamage',
-  MULTI_CRIT: 'multiCrit',
-  ACCELERATION: 'acceleration',
-  FINAL_DAMAGE: 'finalDamage',
-  ARMOR_PEN: 'armorPen',
-  SKILL_DAMAGE: 'skillDamage',
-  MULTI_TARGET_DAMAGE: 'multiTargetDamage',
-  MULTI_TARGET_CHANCE: 'multiTargetChance',
-  MULTI_TARGET_MULTI_CRIT: 'multiTargetMultiCrit',
-  ARMOR_REDUCTION: 'armorReduction',
-  SHIELD_REDUCTION: 'shieldReduction',
-  HEALTH_REDUCTION: 'healthReduction',
-  MANA_REGEN: 'manaRegen',
-  COOLDOWN: 'cooldown',
-  SP_PERCENT: 'spPercent',
-  SP_BANK: 'spBank',
-  RACE_UPGRADE_T_BIO: 'raceUpgradeTBio',
-  RACE_UPGRADE_T_MECH: 'raceUpgradeTMech',
-  RACE_UPGRADE_P_BIO: 'raceUpgradePBio',
-  RACE_UPGRADE_P_MECH: 'raceUpgradePMech',
-  RACE_UPGRADE_ZERG: 'raceUpgradeZerg',
-  RACE_UPGRADE_NEUTRAL: 'raceUpgradeNeutral',
-  RACE_UPGRADE_CAP_BONUS: 'raceUpgradeCapBonus',
-  OTHER: 'other',
-};
-
-export const DERIVED_STAT_KEYS = {
-  ATTACK_DAMAGE_WITH_FD: 'attackDamageWithFD',
-  CRIT_DAMAGE_WITH_TORMENT: 'critDamageWithTorment',
-  AVERAGE_MULTI_CRIT: 'averageMultiCrit',
-};
 
 export const CURRENCY = {
   EP: 'EP',

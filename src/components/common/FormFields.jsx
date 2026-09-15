@@ -1,5 +1,5 @@
 import React from 'react';
-import { toNumber } from '../../pages/LotteryDefense/EUNA/utils/calculatorHelpers';
+import { toNumber } from '../../core/calculator/calculatorHelpers';
 
 export function InputField({ label, value, onChange, options }) {
   return (

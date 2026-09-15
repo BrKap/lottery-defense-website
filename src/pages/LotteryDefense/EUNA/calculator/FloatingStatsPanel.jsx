@@ -1,8 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  DERIVED_STAT_KEYS,
-  STAT_KEYS,
-} from '../constants/calculator/mainConstants';
+import { DERIVED_STAT_KEYS, STAT_KEYS } from '../../../../core/calculator/statKeys';
 
 const EDGE_PADDING = 8;
 

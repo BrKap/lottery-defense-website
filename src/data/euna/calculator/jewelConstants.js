@@ -1,4 +1,4 @@
-import { getJewelImage } from '../../images/imageImporter';
+import { getJewelImage } from '../images/imageImporter';
 
 export const JEWEL_STAT_OPTIONS = Array.from({ length: 31 }, (_, index) => ({
   value: String(index),

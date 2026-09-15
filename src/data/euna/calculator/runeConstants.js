@@ -1,4 +1,4 @@
-import { getRuneImage } from '../../images/imageImporter';
+import { getRuneImage } from '../images/imageImporter';
 import { STAT_KEYS } from './mainConstants';
 
 export const FLIP_DURATION_MS = 1000;
@@ -30,7 +30,7 @@ export const RUNE_AWAKENING_OPTIONS = [
   { value: 'E', label: 'E' },
 ];
 
-export const RUNE_LEVEL_OPTIONS = Array.from({ length: 156}, (_, index) => ({
+export const RUNE_LEVEL_OPTIONS = Array.from({ length: 16}, (_, index) => ({
   value: String(index),
   label: String(index),
 }));

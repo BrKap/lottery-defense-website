@@ -1,12 +1,15 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { RuneEditorCard } from '../MainSidebarCards';
-import { FLIP_DURATION_MS, RUNE_SLOTS } from '../../constants/calculator/runeConstants';
+import { useCalculatorConfig } from '../../../../../core/calculator/CalculatorConfigContext';
 
 export default function RunesTab({
   runeLoadouts,
   updateRuneLoadout,
   swapRuneLoadouts,
 }) {
+  const { calculator } = useCalculatorConfig();
+  const { FLIP_DURATION_MS, RUNE_SLOTS } = calculator;
+
   const [draggedSlot, setDraggedSlot] = useState(null);
   const [hoveredSlot, setHoveredSlot] = useState(null);
 

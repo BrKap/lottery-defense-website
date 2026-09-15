@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
-import { DIFFICULTIES, TITLES } from '../constants/calculator/mainConstants';
-import { GAME_MODES } from '../constants/calculator/mainConstants';
-import { formatNumber } from '../utils/calculatorHelpers';
+import { useCalculatorConfig } from '../../../../core/calculator/CalculatorConfigContext';
+import { formatNumber } from '../../../../core/calculator/calculatorHelpers';
 import { CheckboxField, InputField, NumberField } from '../../../../components/common/FormFields';
 import { StatTile } from '../../../../components/common/Stats';
 import {
@@ -48,6 +47,13 @@ export default function MainTab({
   updateSetting,
   activeRune,
 }) {
+  const { calculator } = useCalculatorConfig();
+  const {
+    DIFFICULTIES,
+    GAME_MODES,
+    TITLES,
+  } = calculator;
+
   const summarizedUnits = useMemo(() => {
     return summarizeUnits(units);
   }, [units]);

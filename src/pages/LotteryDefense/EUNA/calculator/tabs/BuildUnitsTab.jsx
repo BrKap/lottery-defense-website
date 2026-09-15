@@ -1,14 +1,10 @@
 import React from 'react';
-import {
-  JEWEL_OPTIONS,
-  RANK_OPTIONS,
-} from '../../constants/calculator/mainConstants';
-import { UNIT_LIBRARY } from "../../constants/calculator/unitConstants";
+import { useCalculatorConfig } from '../../../../../core/calculator/CalculatorConfigContext';
 import {
   formatNumber,
   toNumber,
-} from '../../utils/calculatorHelpers';
-import { calculateMockUnitDps } from "../../utils/damageCalculation";
+} from '../../../../../core/calculator/calculatorHelpers';
+import { calculateMockUnitDps } from "../../../../../core/calculator/damageCalculation";
 
 export default function BuildUnitsTab({
   selectedUnitId,
@@ -18,6 +14,9 @@ export default function BuildUnitsTab({
   removeUnit,
   updateUnit,
 }) {
+  const { calculator } = useCalculatorConfig();
+  const { JEWEL_OPTIONS, RANK_OPTIONS, unitLibrary } = calculator;
+
   return (
     <section className="card tab-panel-card">
       <div className="section-heading-row">
@@ -36,7 +35,7 @@ export default function BuildUnitsTab({
             value={selectedUnitId}
             onChange={(event) => setSelectedUnitId(event.target.value)}
           >
-            {UNIT_LIBRARY.map((unit) => (
+            {unitLibrary.map((unit) => (
               <option key={unit.id} value={unit.id}>
                 {unit.name}
               </option>

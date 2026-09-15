@@ -1,33 +1,28 @@
-import {
-  LEGENDARY_JEWELS,
-  NORMAL_JEWEL_DEFAULT,
-} from '../constants/calculator/jewelConstants';
-
 function createEntryId(prefix) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-export function createLegendaryJewelsState() {
-  return LEGENDARY_JEWELS.map((jewel) => ({
-    ...NORMAL_JEWEL_DEFAULT,
+export function createLegendaryJewelsState(jewelConfig) {
+  return (jewelConfig?.legendaryJewels ?? []).map((jewel) => ({
+    ...(jewelConfig?.normalJewelDefault ?? {}),
     ...jewel,
     entryId: createEntryId(jewel.id),
   }));
 }
 
-export function createNormalJewel() {
+export function createNormalJewel(jewelConfig) {
   return {
-    ...NORMAL_JEWEL_DEFAULT,
+    ...(jewelConfig?.normalJewelDefault ?? {}),
     entryId: createEntryId('normal-jewel'),
   };
 }
 
-export function createInitialJewelsState(savedJewels = null) {
+export function createInitialJewelsState(savedJewels = null, jewelConfig = null) {
   if (Array.isArray(savedJewels) && savedJewels.length > 0) {
     return savedJewels;
   }
 
-  return createLegendaryJewelsState();
+  return createLegendaryJewelsState(jewelConfig);
 }
 
 export function updateJewelField(jewels, entryId, field, value) {
@@ -41,8 +36,8 @@ export function updateJewelField(jewels, entryId, field, value) {
   );
 }
 
-export function addNormalJewel(jewels) {
-  return [...jewels, createNormalJewel()];
+export function addNormalJewel(jewels, jewelConfig = null) {
+  return [...jewels, createNormalJewel(jewelConfig)];
 }
 
 export function removeNormalJewel(jewels, entryId) {

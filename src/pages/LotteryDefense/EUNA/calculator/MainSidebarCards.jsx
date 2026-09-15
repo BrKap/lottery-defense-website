@@ -1,24 +1,6 @@
 import React from 'react';
+import { useCalculatorConfig } from '../../../../core/calculator/CalculatorConfigContext';
 import { InfoRow, MiniStat } from '../../../../components/common/Stats';
-import {
-  RUNE_AWAKENING_OPTIONS,
-  RUNE_BONUS_FIFTEEN_OPTIONS,
-  RUNE_BONUS_TEN_OPTIONS,
-  RUNE_TRAN_OPTIONS,
-  RUNE_ENCHANT_LEVEL_OPTIONS,
-  RUNE_ENCHANT_ROWS,
-  RUNE_ICON_BY_TYPE,
-  RUNE_LAYOUTS,
-  RUNE_LEVEL_OPTIONS,
-  RUNE_RACE_UPGRADE_OPTIONS,
-  RUNE_SLOTS,
-  RUNE_TYPES,
-  createEmptyRuneData,
-  getRuneBaseOptions,
-  getRunePinkOptions,
-  getRuneYellowValue,
-  getRuneEnchantDisplayValue,
-} from '../constants/calculator/runeConstants';
 
 function SelectValue({
   value,
@@ -59,19 +41,19 @@ function DisplayValue({ value, className = '', placeholder = '-' }) {
   );
 }
 
-function getRuneLayout(runeType) {
+function getRuneLayout(runeType, runeLayouts) {
   const normalizedType = (runeType || 'cosmos').toLowerCase();
-  return RUNE_LAYOUTS[normalizedType] ?? RUNE_LAYOUTS.cosmos;
+  return runeLayouts[normalizedType] ?? runeLayouts.cosmos;
 }
 
-function getRuneIcon(runeType) {
+function getRuneIcon(runeType, runeIconByType) {
   const normalizedType = (runeType || 'cosmos').toLowerCase();
-  return RUNE_ICON_BY_TYPE[normalizedType] ?? '';
+  return runeIconByType[normalizedType] ?? '';
 }
 
-function normalizeRuneData(runeData) {
+function normalizeRuneData(runeData, createEmptyRuneData, runeSlots) {
   return {
-    ...createEmptyRuneData(runeData?.slot ?? RUNE_SLOTS[0]?.value),
+    ...createEmptyRuneData(runeData?.slot ?? runeSlots[0]?.value),
     ...(runeData ?? {}),
   };
 }
@@ -85,10 +67,30 @@ function RunePanelFrame({
   showSlotDropdown = true,
   variant = 'editor',
 }) {
-  const normalizedRune = normalizeRuneData(runeData);
+  const { calculator } = useCalculatorConfig();
+  const {
+    RUNE_AWAKENING_OPTIONS,
+    RUNE_BONUS_FIFTEEN_OPTIONS,
+    RUNE_BONUS_TEN_OPTIONS,
+    RUNE_TRAN_OPTIONS,
+    RUNE_ENCHANT_LEVEL_OPTIONS,
+    RUNE_ENCHANT_ROWS,
+    RUNE_ICON_BY_TYPE,
+    RUNE_LAYOUTS,
+    RUNE_LEVEL_OPTIONS,
+    RUNE_RACE_UPGRADE_OPTIONS,
+    RUNE_SLOTS,
+    RUNE_TYPES,
+    createEmptyRuneData,
+    getRuneBaseOptions,
+    getRunePinkOptions,
+    getRuneYellowValue,
+    getRuneEnchantDisplayValue,
+  } = calculator;
+  const normalizedRune = normalizeRuneData(runeData, createEmptyRuneData, RUNE_SLOTS);
   const runeType = (normalizedRune.runeType || 'cosmos').toLowerCase();
-  const runeLayout = getRuneLayout(runeType);
-  const runeIcon = getRuneIcon(runeType);
+  const runeLayout = getRuneLayout(runeType, RUNE_LAYOUTS);
+  const runeIcon = getRuneIcon(runeType, RUNE_ICON_BY_TYPE);
 
   const renderCell = (
     field,
