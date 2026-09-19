@@ -10,9 +10,11 @@ export function createLegendaryJewelsState(jewelConfig) {
   }));
 }
 
-export function createNormalJewel(jewelConfig) {
+export function createNormalJewel(jewelConfig, typeId = 'square') {
+  const type = jewelConfig?.jewelTypes?.find(jewel => jewel.id === typeId);
   return {
     ...(jewelConfig?.normalJewelDefault ?? {}),
+    ...type,
     entryId: createEntryId('normal-jewel'),
   };
 }
@@ -36,8 +38,8 @@ export function updateJewelField(jewels, entryId, field, value) {
   );
 }
 
-export function addNormalJewel(jewels, jewelConfig = null) {
-  return [...jewels, createNormalJewel(jewelConfig)];
+export function addNormalJewel(jewels, jewelConfig = null, typeId = 'square') {
+  return [...jewels, createNormalJewel(jewelConfig, typeId)];
 }
 
 export function removeNormalJewel(jewels, entryId) {
@@ -61,4 +63,18 @@ export function splitJewelsByType(jewels) {
     legendaryJewels,
     normalJewels,
   };
+}
+
+export function getEquippableJewels(jewels, selectedId = 'none') {
+  const options = [{ value: 'none', label: 'None' }, ...jewels
+    .filter(j => j.available !== false || j.entryId === selectedId)
+    .map((j, i) => ({ value: j.entryId, label: `${j.name} (${i + 1})${j.available === false ? ' — equipped, hidden' : ''}` }))];
+  if (!options.some(o => o.value === selectedId)) options.push({ value: selectedId, label: `Unresolved jewel: ${selectedId} — reassign` });
+  return options;
+}
+
+export function removeJewelAndAssignments(state, entryId) {
+  if (state.jewels.find(j => j.entryId === entryId)?.legendary) return state;
+  return { ...state, jewels: removeNormalJewel(state.jewels, entryId),
+    units: state.units.map(unit => unit.jewel === entryId ? { ...unit, jewel: 'none' } : unit) };
 }

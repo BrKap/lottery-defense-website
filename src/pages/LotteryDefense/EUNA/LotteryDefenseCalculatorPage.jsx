@@ -2,16 +2,14 @@ import React, { useEffect, useMemo, useState } from 'react';
 import './styles/ld-euna-index.css';
 import {
   addNormalJewel,
-  createInitialJewelsState,
-  removeNormalJewel,
+  removeJewelAndAssignments,
   updateJewelField,
 } from '../../../core/calculator/jewelHelpers';
 import {
   calculateMockRequiredDps,
   calculateMockUnitDps
 } from "../../../core/calculator/damageCalculation";
-import { createUnitEntry } from '../../../core/calculator/createUnitEntry';
-import { buildInitialInvestments } from '../../../core/calculator/spUpgradeHelpers';
+import { loadCalculatorState, saveCalculatorState, hydrateUnits, appendBuildUnit, updateBuildUnit, updateRuneField } from '../../../core/calculator/calculatorState';
 import { calculateProfileStats } from '../../../core/calculator/statCalculator';
 import FloatingStatsPanel from './calculator/FloatingStatsPanel';
 import CalculatorHero from './calculator/CalculatorHero';
@@ -24,130 +22,35 @@ import BuffsTab from './calculator/tabs/BuffsTab';
 import PresetsTab from './calculator/tabs/PresetsTab';
 import BuildUnitsTab from './calculator/tabs/BuildUnitsTab';
 
-const STORAGE_KEY = 'ld-euna-calculator-state';
-
-const INITIAL_SETTINGS = {
-  title: 'Rookie',
-  difficulty: 'Practice',
-  torment: 0,
-  round: 270,
-  xp: 0,
-  sp: 0,
-  gameMode: 'Standard',
-  tocMode: false,
-  runeSlot: 'slot-1',
-  presetName: 'Default EUNA Preset',
-};
-
-function loadSavedCalculatorState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-
-    if (!raw) {
-      return null;
-    }
-
-    return JSON.parse(raw);
-  } catch (error) {
-    console.error('Failed to load calculator state:', error);
-    return null;
-  }
-}
-
-function createDefaultUnits(safeUnitLibrary) {
-  return safeUnitLibrary
-    .filter((_, index) => [0, 1, 3].includes(index))
-    .map((unit) => createUnitEntry(unit));
-}
-
 export default function LotteryDefenseCalculatorPage({ versionConfig }) {
   const calculatorConfig = versionConfig.calculator;
-  const safeUnitLibrary = Array.isArray(calculatorConfig.unitLibrary)
-    ? calculatorConfig.unitLibrary
-    : [];
-  const defaultUnit = safeUnitLibrary[0] ?? null;
+  const safeUnitLibrary = calculatorConfig.unitLibrary ?? [];
   const runeSlots = calculatorConfig.RUNE_SLOTS ?? [];
-  const upgradeGroups = calculatorConfig.UPGRADE_GROUPS ?? [];
   const upgradeGroupMap = calculatorConfig.UPGRADE_GROUP_MAP ?? {};
-  const jewelConfig = {
-    legendaryJewels: calculatorConfig.LEGENDARY_JEWELS,
-    normalJewelDefault: calculatorConfig.NORMAL_JEWEL_DEFAULT,
+  const jewelConfig = { legendaryJewels: calculatorConfig.LEGENDARY_JEWELS,
+    normalJewelDefault: calculatorConfig.NORMAL_JEWEL_DEFAULT, jewelTypes: calculatorConfig.JEWEL_TYPES };
+  const [loaded] = useState(() => loadCalculatorState(window.localStorage, calculatorConfig));
+  const [state, setState] = useState(loaded.state);
+  const [notice, setNotice] = useState('');
+  const [saveError, setSaveError] = useState('');
+  const setField = (field) => (value) => {
+    if (loaded.blocked) return;
+    setState(current => ({ ...current, [field]: typeof value === 'function' ? value(current[field]) : value }));
   };
-  const initialSettings = {
-    ...INITIAL_SETTINGS,
-    runeSlot: runeSlots[0]?.value ?? INITIAL_SETTINGS.runeSlot,
-  };
-
-  const [activeTab, setActiveTab] = useState(() => {
-    const savedState = loadSavedCalculatorState();
-    return savedState?.activeTab ?? 'main';
-  });
-
-  const [jewels, setJewels] = useState(() => {
-    const savedState = loadSavedCalculatorState();
-    return createInitialJewelsState(savedState?.jewels, jewelConfig);
-  });
-
-  const [selectedUnitId, setSelectedUnitId] = useState(() => {
-    const savedState = loadSavedCalculatorState();
-    return savedState?.selectedUnitId ?? defaultUnit?.id ?? '';
-  });
-
-  const [calculatorSettings, setCalculatorSettings] = useState(() => {
-    const savedState = loadSavedCalculatorState();
-    return {
-      ...initialSettings,
-      ...(savedState?.calculatorSettings ?? {}),
-    };
-  });
-
-  const [units, setUnits] = useState(() => {
-    const savedState = loadSavedCalculatorState();
-    return savedState?.units ?? createDefaultUnits(safeUnitLibrary);
-  });
-
-  const [spActiveGroupId, setSpActiveGroupId] = useState(() => {
-    const savedState = loadSavedCalculatorState();
-    return savedState?.spActiveGroupId ?? upgradeGroups[0]?.id ?? '';
-  });
-
-  const [spInvestments, setSpInvestments] = useState(() => {
-    const savedState = loadSavedCalculatorState();
-    return savedState?.spInvestments ?? buildInitialInvestments(upgradeGroups);
-  });
-
-  const [runeLoadouts, setRuneLoadouts] = useState(() => {
-    const savedState = loadSavedCalculatorState();
-    return savedState?.runeLoadouts ?? calculatorConfig.createInitialRuneLoadouts();
-  });
-
+  const { activeTab, jewels, selectedUnitId, calculatorSettings, spActiveGroupId, spInvestments, runeLoadouts } = state;
+  const units = useMemo(() => hydrateUnits(state.units, calculatorConfig), [state.units, calculatorConfig]);
+  const setActiveTab = setField('activeTab'), setJewels = setField('jewels'), setSelectedUnitId = setField('selectedUnitId');
+  const setCalculatorSettings = setField('calculatorSettings'), setUnits = setField('units');
+  const setSpActiveGroupId = setField('spActiveGroupId'), setSpInvestments = setField('spInvestments'), setRuneLoadouts = setField('runeLoadouts');
   useEffect(() => {
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          activeTab,
-          selectedUnitId,
-          calculatorSettings,
-          units,
-          spActiveGroupId,
-          spInvestments,
-          runeLoadouts,
-          jewels,
-        })
-      );
-    } catch (error) {
-      console.error('Failed to save calculator state:', error);
-    }
-  }, [
-    activeTab,
-    selectedUnitId,
-    calculatorSettings,
-    units,
-    spActiveGroupId,
-    spInvestments,
-    runeLoadouts,
-  ]);
+    try { saveCalculatorState(window.localStorage, state, loaded); setSaveError(''); }
+    catch { setSaveError('Changes could not be saved. Keep this page open and export your recovery data before closing.'); }
+  }, [state, loaded]);
+  const exportRecovery = () => {
+    const blob = new Blob([loaded.originalRaw ?? JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob), link = document.createElement('a');
+    link.href = url; link.download = 'calculator-recovery.json'; link.click(); URL.revokeObjectURL(url);
+  };
 
   const derivedStats = useMemo(() => {
     const overallDps = units.reduce((sum, unit) => {
@@ -178,7 +81,10 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
     const template =
       safeUnitLibrary.find((unit) => unit.id === selectedUnitId) ?? safeUnitLibrary[0];
 
-    setUnits((currentUnits) => [...currentUnits, createUnitEntry(template)]);
+    if (template.id === 'artifact' && state.units.some(u => u.unitId === 'artifact')) {
+      setNotice('Only one Artifact can be added.'); return;
+    }
+    setUnits((currentUnits) => appendBuildUnit(currentUnits, template));
   };
 
   const removeUnit = (entryId) => {
@@ -186,16 +92,7 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
   };
 
   const updateUnit = (entryId, field, value) => {
-    setUnits((currentUnits) =>
-      currentUnits.map((unit) =>
-        unit.entryId !== entryId
-          ? unit
-          : {
-              ...unit,
-              [field]: value,
-            }
-      )
-    );
+    setUnits(current => updateBuildUnit(current, entryId, field, value));
   };
 
   const updateSetting = (field, value) => {
@@ -206,16 +103,7 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
   };
 
   const updateRuneLoadout = (slot, field, value) => {
-    setRuneLoadouts((currentLoadouts) =>
-      currentLoadouts.map((rune) =>
-        rune.slot !== slot
-          ? rune
-          : {
-              ...rune,
-              [field]: value,
-            }
-      )
-    );
+    setRuneLoadouts(current => updateRuneField(current, slot, field, value));
   };
 
   const swapRuneLoadouts = (sourceSlot, targetSlot) => {
@@ -246,12 +134,15 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
     setJewels((currentJewels) => updateJewelField(currentJewels, entryId, field, value));
   };
 
-  const handleAddNormalJewel = () => {
-    setJewels((currentJewels) => addNormalJewel(currentJewels, jewelConfig));
+  const handleAddNormalJewel = (typeId = 'square') => {
+    setJewels((currentJewels) => addNormalJewel(currentJewels, jewelConfig, typeId));
   };
 
   const handleRemoveNormalJewel = (entryId) => {
-    setJewels((currentJewels) => removeNormalJewel(currentJewels, entryId));
+    if (loaded.blocked) return;
+    const count = state.units.filter(u => u.jewel === entryId).length;
+    setState(current => removeJewelAndAssignments(current, entryId));
+    setNotice(count ? 'Jewel removed. Affected units now have no jewel equipped.' : 'Jewel removed.');
   };
 
   const profileSummary = useMemo(() => {
@@ -285,6 +176,13 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
 
   return (
     <section className="calculator-page">
+      {(loaded.notes.length > 0 || loaded.blocked || saveError || notice) && <section className="card" aria-label="Saved build notices">
+        {loaded.blocked && <p role="alert">Preview only. Your saved build will not be overwritten.</p>}
+        {saveError && <p role="alert">{saveError}</p>}
+        {notice && <p role="status">{notice}</p>}
+        {loaded.notes.length > 0 && <details><summary>Saved build review ({loaded.notes.length})</summary><ul>{loaded.notes.map((n, i) => <li key={i}>{n}</li>)}</ul></details>}
+        <button type="button" onClick={exportRecovery}>Download original saved data</button>
+      </section>}
       <CalculatorHero settings={calculatorSettings} versionConfig={versionConfig} />
       <CalculatorTabs tabs={calculatorConfig.TAB_OPTIONS} activeTab={activeTab} onChange={setActiveTab} />
 
@@ -338,6 +236,7 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
       )}
       {activeTab === 'build-units' && (
         <BuildUnitsTab
+          jewels={jewels}
           selectedUnitId={selectedUnitId}
           setSelectedUnitId={setSelectedUnitId}
           units={units}

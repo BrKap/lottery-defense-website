@@ -57,6 +57,8 @@ export function getUpgradeCostForLevel(upgrade, level) {
     return 0;
   }
 
+  if (upgrade.costModel?.type === 'unavailable') return null;
+
   return getValueForLevelFromModel(upgrade.costModel, level);
 }
 
@@ -72,6 +74,7 @@ export function getNextUpgradePrice(upgrade, investedCount) {
 
 export function getTotalUpgradePrice(upgrade, investedCount) {
   const clampedLevel = clampLevel(investedCount, upgrade.maxInvestments);
+  if (clampedLevel > 0 && upgrade.costModel?.type === 'unavailable') return null;
 
   let total = 0;
 
@@ -105,13 +108,16 @@ export function calculateUpgradeTotals(investments, upgradeGroups = []) {
   let totalEpOverall = 0;
 
   const groupTotals = {};
+  const unknownCostUpgrades = [];
 
   upgradeGroups.forEach((group) => {
     let groupTotal = 0;
 
     group.upgrades.forEach((upgrade) => {
       const investedCount = investments[group.id]?.[upgrade.id] ?? 0;
-      groupTotal += getTotalUpgradePrice(upgrade, investedCount);
+      const price = getTotalUpgradePrice(upgrade, investedCount);
+      if (price === null) unknownCostUpgrades.push({ groupId: group.id, upgradeId: upgrade.id, name: upgrade.name });
+      else groupTotal += price;
     });
 
     groupTotals[group.id] = groupTotal;
@@ -127,6 +133,7 @@ export function calculateUpgradeTotals(investments, upgradeGroups = []) {
     totalSpOverall,
     totalEpOverall,
     groupTotals,
+    unknownCostUpgrades,
   };
 }
 

@@ -1,66 +1,14 @@
+import catalog from './unitCatalog.json';
+import recipes from './unitRecipes.json';
 
-export const UNIT_LIBRARY = [
-  {
-    id: 'xelnaga-kerrigan',
-    name: "Xel'Naga Kerrigan",
-    race: 'Zerg',
-    baseDamage: 100,
-    attackSpeed: 0.5,
-    attacks: 5,
-    defensePen: 25,
-  },
-  {
-    id: 'amon',
-    name: 'Amon',
-    race: 'P Bio',
-    baseDamage: 270,
-    attackSpeed: 0.5,
-    attacks: 2,
-    defensePen: 25,
-  },
-  {
-    id: 'terra-tron',
-    name: 'Terra Tron',
-    race: 'T Mech',
-    baseDamage: 270,
-    attackSpeed: 0.5,
-    attacks: 1,
-    defensePen: 30,
-  },
-  {
-    id: 'spec-ops-nova',
-    name: 'Spec Ops Nova',
-    race: 'T Bio',
-    baseDamage: 165,
-    attackSpeed: 0.63,
-    attacks: 2,
-    defensePen: 30,
-  },
-  {
-    id: 'spear-of-adun',
-    name: 'Spear of Adun',
-    race: 'P Mech',
-    baseDamage: 220,
-    attackSpeed: 0.5,
-    attacks: 2,
-    defensePen: 30,
-  },
-  {
-    id: 'overmind',
-    name: 'Overmind',
-    race: 'Zerg',
-    baseDamage: 145,
-    attackSpeed: 2.5,
-    attacks: 3,
-    defensePen: 25,
-  },
-  {
-    id: 'sarah-kerrigan',
-    name: 'Sarah Kerrigan',
-    race: 'Zerg, Terran',
-    baseDamage: 165,
-    attackSpeed: 1,
-    attacks: 2,
-    defensePen: 10,
-  },
-];
+export const DATA_REVISION = 'euna-2026-09-19.2';
+export const UNIT_LIBRARY = catalog.map(unit => ({ ...unit, attackSpeed: unit.baseInterval }));
+export const UNIT_RECIPES = Object.fromEntries(recipes.map(recipe => [recipe.unitId, recipe]));
+export const INGREDIENT_ALIASES = { Spart: 'goliath', Goliath: 'goliath' };
+// User-approved temporary zeroes for D/C/A; see Documentation/missing.
+export const RANK_BONUSES = {
+  D: { ad: 0, as: 0, provisional: true }, C: { ad: 0, as: 0, provisional: true },
+  B: { ad: 0, as: 0 }, A: { ad: 0, as: 0, provisional: true },
+  S: { ad: 10, as: 0 }, SS: { ad: 20, as: 0 }, SSS: { ad: 30, as: 0 },
+  X: { ad: 40, as: 0 }, XD: { ad: 50, as: 0 }, SXD: { ad: 50, as: 25 }, RXD: { ad: 100, as: 50 },
+};

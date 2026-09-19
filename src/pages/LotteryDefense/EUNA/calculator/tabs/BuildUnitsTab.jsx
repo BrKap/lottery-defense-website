@@ -5,8 +5,10 @@ import {
   toNumber,
 } from '../../../../../core/calculator/calculatorHelpers';
 import { calculateMockUnitDps } from "../../../../../core/calculator/damageCalculation";
+import { getEquippableJewels } from '../../../../../core/calculator/jewelHelpers';
 
 export default function BuildUnitsTab({
+  jewels,
   selectedUnitId,
   setSelectedUnitId,
   units,
@@ -15,7 +17,7 @@ export default function BuildUnitsTab({
   updateUnit,
 }) {
   const { calculator } = useCalculatorConfig();
-  const { JEWEL_OPTIONS, RANK_OPTIONS, unitLibrary } = calculator;
+  const { RANK_OPTIONS, unitLibrary } = calculator;
 
   return (
     <section className="card tab-panel-card">
@@ -44,7 +46,8 @@ export default function BuildUnitsTab({
         </label>
 
         <div className="unit-builder-actions">
-          <button className="primary-button add-button" type="button" onClick={addUnit}>
+          <button className="primary-button add-button" type="button" onClick={addUnit}
+            disabled={selectedUnitId === 'artifact' && units.some(u => u.unitId === 'artifact')}>
             Add Unit Entry
           </button>
         </div>
@@ -86,7 +89,7 @@ export default function BuildUnitsTab({
                       className="table-input input-xs"
                       type="number"
                       min="0"
-                      max="999"
+                      max={unit.maxCount ?? 999}
                       value={unit.count ?? 1}
                       onChange={(event) =>
                         updateUnit(unit.entryId, 'count', toNumber(event.target.value))
@@ -102,7 +105,7 @@ export default function BuildUnitsTab({
                         updateUnit(unit.entryId, 'rank', event.target.value)
                       }
                     >
-                      {RANK_OPTIONS.map((rank) => (
+                      {(RANK_OPTIONS.includes(unit.rank) ? RANK_OPTIONS : [unit.rank, ...RANK_OPTIONS]).map((rank) => (
                         <option key={rank} value={rank}>
                           {rank}
                         </option>
@@ -157,7 +160,7 @@ export default function BuildUnitsTab({
                         updateUnit(unit.entryId, 'jewel', event.target.value)
                       }
                     >
-                      {JEWEL_OPTIONS.map((jewel) => (
+                      {getEquippableJewels(jewels, unit.jewel ?? 'none').map((jewel) => (
                         <option key={jewel.value} value={jewel.value}>
                           {jewel.label}
                         </option>

@@ -67,6 +67,8 @@ export const UPGRADE_GROUPS = [
     label: 'Rookie',
     currency: CURRENCY.SP,
     upgrades: [
+      createUpgrade({ id: 'exchange', name: 'Exchange +', maxInvestments: 20,
+        statKey: STAT_KEYS.OTHER, valueModel: createLinearValueModel(), costModel: { type: 'unavailable' } }),
       createUpgrade({
         name: 'Atk Dmg I',
         statKey: STAT_KEYS.ATTACK_DAMAGE,
@@ -96,6 +98,8 @@ export const UPGRADE_GROUPS = [
     label: 'Beginner',
     currency: CURRENCY.SP,
     upgrades: [
+      createUpgrade({ id: 'life', name: 'Life +', maxInvestments: 10,
+        statKey: STAT_KEYS.OTHER, valueModel: createLinearValueModel(), costModel: { type: 'unavailable' } }),
       createUpgrade({
         name: 'Crit Chance I',
         statKey: STAT_KEYS.CRIT_CHANCE,

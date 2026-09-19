@@ -8,11 +8,14 @@ export function createUnitEntry(unit) {
     weapon: unit.weapon,
 
     count: 1,
-    rank: 'D',
+    rank: 'B',
     level: 0,
     armor: 0,
     lb: 0,
     jewel: 'none',
+    abilityMode: 'default',
+    overmindStacks: 0,
+    xnkFixedAttacks: true,
 
     baseDamage: unit.baseDamage ?? 0,
     attackSpeed: unit.attackSpeed ?? 0,

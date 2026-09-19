@@ -36,3 +36,7 @@ coverage/
 
 # Obsidian
 Documentation/
+
+# Extra Stuff
+scripts/
+tests/

@@ -100,6 +100,7 @@ export default function SpUpgradesTab({
         </div>
 
         <div className="sp-upgrade-table-wrapper">
+          {totals.unknownCostUpgrades.length > 0 && <p role="status">Totals include known costs only. Prices are unavailable for: {totals.unknownCostUpgrades.map(u => u.name).join(', ')}.</p>}
           <table className="sp-upgrade-table">
             <thead>
               <tr>
@@ -137,8 +138,8 @@ export default function SpUpgradesTab({
                     </td>
                     <td>{upgrade.maxInvestments}</td>
                     <td>{upgrade.name}</td>
-                    <td>{nextPrice}</td>
-                    <td>{totalPrice}</td>
+                    <td>{nextPrice ?? 'Unknown'}</td>
+                    <td>{totalPrice ?? 'Unknown'}</td>
                   </tr>
                 );
               })}

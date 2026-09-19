@@ -16,6 +16,7 @@ export const eunaVersionConfig = {
     ...jewelConstants,
     ...runeConstants,
     ...spUpgradeConstants,
+    ...unitConstants,
     unitLibrary: unitConstants.UNIT_LIBRARY,
   },
 };

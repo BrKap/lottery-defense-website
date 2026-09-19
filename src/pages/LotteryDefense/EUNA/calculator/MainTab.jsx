@@ -52,6 +52,8 @@ export default function MainTab({
     DIFFICULTIES,
     GAME_MODES,
     TITLES,
+    CLASSIC_ROUNDS,
+    TOC_FLOORS,
   } = calculator;
 
   const summarizedUnits = useMemo(() => {
@@ -101,12 +103,11 @@ export default function MainTab({
               onChange={(value) => updateSetting('torment', value)}
             />
 
-            <NumberField
+            <InputField
               label="Round"
               value={calculatorSettings.round}
-              min={1}
-              max={300}
-              onChange={(value) => updateSetting('round', value)}
+              options={CLASSIC_ROUNDS.includes(calculatorSettings.round) ? CLASSIC_ROUNDS : [calculatorSettings.round, ...CLASSIC_ROUNDS]}
+              onChange={(value) => updateSetting('round', Number(value))}
             />
 
             <InputField
@@ -124,17 +125,17 @@ export default function MainTab({
             />
 
             <NumberField
-              label="Donation SP"
-              value={calculatorSettings.donationSp ?? 0}
+              label="Starting SP"
+              value={calculatorSettings.startingSp ?? 0}
               min={0}
-              onChange={(value) => updateSetting('donationSp', value)}
+              onChange={(value) => updateSetting('startingSp', value)}
             />
 
             <NumberField
               label="The Zero Level"
               value={calculatorSettings.theZeroLevel ?? 0}
               min={0}
-              max={10}
+              max={11}
               onChange={(value) => updateSetting('theZeroLevel', value)}
             />
 
@@ -143,6 +144,10 @@ export default function MainTab({
               checked={calculatorSettings.tocMode}
               onChange={(checked) => updateSetting('tocMode', checked)}
             />
+            <NumberField label="GP" value={calculatorSettings.gp} min={0} max={400} onChange={value => updateSetting('gp', value)} />
+            {calculatorSettings.tocMode && <InputField label="ToC Floor" value={calculatorSettings.tocFloor}
+              options={TOC_FLOORS.includes(calculatorSettings.tocFloor) ? TOC_FLOORS : [calculatorSettings.tocFloor, ...TOC_FLOORS]}
+              onChange={value => updateSetting('tocFloor', Number(value))} />}
           </div>
         </section>
 

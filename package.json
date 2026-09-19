@@ -4,6 +4,8 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
+    "test:calculator": "node --test tests/calculator-phase0.test.mjs tests/calculator-state.test.mjs",
+    "audit:calculator": "node scripts/calculator/audit-phase1.mjs",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"

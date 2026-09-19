@@ -52,6 +52,8 @@ export const PROFILE = {
 };
 
 export const GAME_MODES = ['Classic', 'Eternal', 'Hyper'];
+export const CLASSIC_ROUNDS = [115, 180, 190, 200, 210, 220, 240, 250, 260, 269, 270, 300];
+export const TOC_FLOORS = Array.from({ length: 15 }, (_, i) => 70 + i);
 
 export const TAB_OPTIONS = [
   { id: 'main', label: 'Main' },
