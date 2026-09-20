@@ -12,7 +12,7 @@ export const JEWEL_EDITABLE_ROWS = [
   { key: 'attackSpeed', label: 'Atk Spd' }, { key: 'attackDamage', label: 'Atk Dmg' },
   { key: 'cooldown', label: 'Cooldown' }, { key: 'skillDamage', label: 'Skill Dmg' },
 ];
-// Data contracts only. Combat applies conditional innates in Phase 4.
+// Data contracts only. Combat code applies conditional innate effects.
 const definitions = [
   ['Emerald', { finalDamage: 30 }, '30 FD at LB 5+', { minimumLb: 5 }],
   ['Topaz', { attackSpeed: 15 }, '+15 AS'],

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { withCalculatorModules } from '../scripts/calculator/load-modules.mjs';
+import { withCalculatorModules } from '../scripts/calculator/load-calculator-modules.mjs';
 
 function memoryStorage() {
   const values = new Map();
@@ -8,7 +8,7 @@ function memoryStorage() {
 }
 test('State: catalogs, migration and persistence', async t => withCalculatorModules(async ({ config, state: api, jewels, entries, helpers }) => {
   const defaults = () => api.createDefaultCalculatorState(config);
-  await t.test('catalogs and approved unit identities', () => {
+  await t.test('catalog structure and unit identities', () => {
     assert.equal(config.unitLibrary.length, 33);
     assert.equal(new Set(config.unitLibrary.map(u => u.id)).size, 33);
     assert.equal(config.unitLibrary.find(u => u.id === 'sarah-kerrigan').attacks, 1);

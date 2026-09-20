@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { withCalculatorModules } from '../scripts/calculator/load-modules.mjs';
+import { withCalculatorModules } from '../scripts/calculator/load-calculator-modules.mjs';
 
-const fixtures = JSON.parse(fs.readFileSync(new URL('./fixtures/calculator-audit.json', import.meta.url), 'utf8'));
+const fixtures = JSON.parse(fs.readFileSync(new URL('./fixtures/calculator-math-cases.json', import.meta.url), 'utf8'));
 const near = (actual, expected, label) => {
   assert(Number.isFinite(actual), `${label}: not finite`);
   assert(Math.abs(actual - expected) <= Math.max(1e-10, Math.abs(expected) * 1e-10), `${label}: ${actual} != ${expected}`);
@@ -12,10 +12,10 @@ function statsMatch(actual, expected, id) {
   for (const [key, value] of Object.entries(expected)) near(actual[key], value, `${id}.${key}`);
 }
 
-test('Audit: characterize current code before approved changes', async t => {
+test('Calculator stat and upgrade calculations', async t => {
   await withCalculatorModules(async ({ stats, runes, upgrades, helpers }) => {
     const baseRune = { ...runes.createEmptyRuneData('slot-1') };
-    // Eliminate defaults so fixture arithmetic is explicit and independent.
+    // Eliminate defaults so each case specifies all values that affect its arithmetic.
     for (const key of Object.keys(baseRune)) if (key.endsWith('Base') || key.endsWith('Bonus')) baseRune[key] = '0';
     for (const row of fixtures.runes) await t.test(row.id, () => {
       const actual = stats.calculateRuneSourceStats([{ ...baseRune, ...row.input }], runes);

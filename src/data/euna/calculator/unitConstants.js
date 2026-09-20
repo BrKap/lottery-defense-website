@@ -5,7 +5,7 @@ export const DATA_REVISION = 'euna-2026-09-19.2';
 export const UNIT_LIBRARY = catalog.map(unit => ({ ...unit, attackSpeed: unit.baseInterval }));
 export const UNIT_RECIPES = Object.fromEntries(recipes.map(recipe => [recipe.unitId, recipe]));
 export const INGREDIENT_ALIASES = { Spart: 'goliath', Goliath: 'goliath' };
-// User-approved temporary zeroes for D/C/A; see Documentation/missing.
+// Rank bonuses for D/C/A are not available yet, so they currently contribute zero.
 export const RANK_BONUSES = {
   D: { ad: 0, as: 0, provisional: true }, C: { ad: 0, as: 0, provisional: true },
   B: { ad: 0, as: 0 }, A: { ad: 0, as: 0, provisional: true },
