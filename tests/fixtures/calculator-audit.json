@@ -1,0 +1,34 @@
+{
+  "purpose": "Characterization of current code, not approval of known bugs. Change affected expectations explicitly when implementing decisions; keep source/user targets separate.",
+  "runes": [
+    {"id":"RUNE-ZERO","input":{},"expected":{"attackDamage":0,"attackSpeed":0,"critDamage":0,"critChance":0,"acceleration":1}},
+    {"id":"RUNE-LEVEL9","input":{"runeLevel":"9"},"expected":{"attackDamage":9,"attackSpeed":9,"critChance":9,"spPercent":5}},
+    {"id":"RUNE-PINK","input":{"attackDamageBase":"10","attackDamageBonus":"15","critDamageBase":"20","critDamageBonus":"30"},"expected":{"attackDamage":25,"critDamage":50}},
+    {"id":"RUNE-EARLY-AWAKEN","decision":"Q01","input":{"runeLevel":"14","runeAwakening":"E","attackDamageBase":"10","attackSpeedBase":"20"},"expected":{"attackDamage":34,"attackSpeed":54,"critDamage":30,"armorReduction":10}},
+    {"id":"RUNE-EARLY-BONUSES","decision":"D04","input":{"runeBonusTen":"50% Crit Dmg","runeBonusFifteen":"3 MC"},"expected":{"critDamage":50,"multiCrit":3}},
+    {"id":"RUNE-REPEATED-BONUS","decision":"Q01","input":{"runeLevel":"15","runeBonusTen":"50% Crit Dmg","runeBonusFifteen":"50% Crit Dmg","runeTran":"50% Crit Dmg"},"expected":{"critDamage":150}},
+    {"id":"RUNE-ACCEL","decision":"D04","input":{"runeLevel":"15","runeBonusTen":"15% Accel"},"expected":{"acceleration":1.15}},
+    {"id":"RUNE-RACE-DUPLICATE","decision":"Q01","input":{"runeLevel":"15","runeRaceUpgrade":"Zerg","runeBonusTen":"Every Race +1"},"expected":{"raceUpgradeZerg":2,"raceUpgradeTBio":1,"raceUpgradeNeutral":1}},
+    {"id":"RUNE-ENCHANT9","decision":"D05","input":{"enchantAttackDamage":"9","enchantAttackSpeed":"9","enchantAcceleration":"9","enchantTotalDamage":"9","enchantShieldReduction":"9","enchantHealthReduction":"9"},"expected":{"attackDamage":65,"critChance":24,"acceleration":1.15,"finalDamage":8,"shieldReduction":15,"healthReduction":15}},
+    {"id":"RUNE-FINAL-SD","input":{"runeType":"Final","skillDamageBase":"50"},"expected":{"skillDamage":50,"critDamage":0}},
+    {"id":"RUNE-COSMOS","input":{"runeType":"Cosmos","accelerationBase":"10"},"expected":{"acceleration":1.1}},
+    {"id":"RUNE-CHAOS","input":{"runeType":"Chaos","finalDamageBase":"5","runeBonusTen":"2x Final dmg"},"expected":{"finalDamage":10}}
+  ],
+  "investments": [
+    {"id":"SP-CORE","input":{"rookie":{"atk-dmg-i":5,"atk-spd-i":5},"expert":{"crit-dmg-i":2},"the-one":{"final-dmg":4}},"expected":{"attackDamage":15,"attackSpeed":15,"critDamage":4.98,"finalDamage":0.994}},
+    {"id":"SP-ACCEL","input":{"the-one":{"accel":4},"infinite":{"accel-inf-":14}},"expected":{"acceleration":1.0200790381439615}},
+    {"id":"SP-INFINITE-AS","decision":"R01","input":{"infinite":{"atk-spd-inf-":5}},"expected":{"attackSpeed":1}},
+    {"id":"SP-EP","input":{"ep":{"atk-dmg-e-":2,"multi-crit-e-":1,"reduce-armor":1}},"expected":{"attackDamage":8,"multiCrit":1,"armorReduction":10}}
+  ],
+  "costs": [
+    {"id":"COST-ROOKIE","group":"rookie","upgrade":"atk-dmg-i","level":5,"total":650,"next":0},
+    {"id":"COST-AD-IV150","group":"the-one","upgrade":"atk-dmg-iv","level":150,"total":4023750,"next":53250},
+    {"id":"COST-AD-IV151","group":"the-one","upgrade":"atk-dmg-iv","level":151,"total":4077000,"next":53250},
+    {"id":"COST-CC-III151","group":"the-one","upgrade":"crit-chance-iii","level":151,"total":5775750,"next":75750},
+    {"id":"COST-MC-EXPERT25","group":"expert","upgrade":"multi-crit-i","level":25,"total":1189250,"next":0},
+    {"id":"COST-MC-ONE15","group":"the-one-ii","upgrade":"multi-crit-ii","level":15,"total":4875000,"next":0},
+    {"id":"COST-EP14","group":"ep","upgrade":"atk-dmg-e-","level":14,"total":105,"next":100},
+    {"id":"COST-EP15","group":"ep","upgrade":"atk-dmg-e-","level":15,"total":205,"next":100},
+    {"id":"COST-INFINITE","group":"infinite","upgrade":"atk-spd-inf-","level":2,"total":1000,"next":1400}
+  ]
+}
