@@ -320,18 +320,23 @@ export function RuneEditorCard({ runeData, onFieldChange, slotDisplayValue }) {
         showSlotDropdown={false}
         variant="editor"
       />
+      <details><summary>Additional manual modifiers</summary>
+        {Object.entries({ attackDamage: 'AD', attackSpeed: 'AS', critDamage: 'CD', critChance: 'CC' }).map(([key, label]) => <label className="stacked-field" key={key}>{label}
+          <input type="number" aria-label={`${slotDisplayValue ?? runeData.slot} manual ${label}`} value={runeData.manualModifiers?.[key] ?? 0} onChange={event => onFieldChange('manualModifiers', { ...runeData.manualModifiers, [key]: Number(event.target.value) || 0 })} />
+        </label>)}
+      </details>
     </article>
   );
 }
 
-export function BuffPreviewCard() {
+export function BuffPreviewCard({ buffs = {}, tocMode = false }) {
   return (
     <section className="card sidebar-card">
       <h3>Buff Preview</h3>
       <div className="sidebar-list-grid">
-        <InfoRow label="Full Team Buff" value="2" />
-        <InfoRow label="Bless" value="1" />
-        <InfoRow label="SD Gem" value="None" />
+        <InfoRow label="Full Team Buff" value={tocMode ? 'Inactive in ToC' : buffs.teamBuffCount ?? 0} />
+        <InfoRow label="Bless" value={buffs.bless ?? 0} />
+        <InfoRow label="SD Gem" value={buffs.sdGem ?? 'none'} />
       </div>
     </section>
   );

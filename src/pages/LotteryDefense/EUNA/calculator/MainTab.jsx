@@ -46,6 +46,7 @@ export default function MainTab({
   units,
   updateSetting,
   activeRune,
+  buffs,
 }) {
   const { calculator } = useCalculatorConfig();
   const {
@@ -68,7 +69,7 @@ export default function MainTab({
           updateSetting={updateSetting}
           runeData={activeRune}
         />
-        <BuffPreviewCard />
+        <BuffPreviewCard buffs={buffs} tocMode={calculatorSettings.tocMode} />
       </aside>
 
       <div className="calculator-center-column">

@@ -16,8 +16,9 @@ const MAIN_STAT_ROWS = [
 
 const EXTRA_STAT_ROWS = [
   { key: STAT_KEYS.FINAL_DAMAGE, label: 'FD', suffix: '' },
-  { key: STAT_KEYS.ATTACK_DAMAGE, label: 'Raw AD', suffix: '' },
-  { key: STAT_KEYS.CRIT_DAMAGE, label: 'Raw CD', suffix: '' },
+  { key: 'uncappedAttackDamage', label: 'Raw AD', suffix: '' },
+  { key: STAT_KEYS.ATTACK_DAMAGE, label: 'Capped AD', suffix: '' },
+  { key: 'uncappedCritDamage', label: 'Raw CD', suffix: '' },
   { key: STAT_KEYS.MULTI_CRIT, label: 'MC', suffix: '' },
   { key: STAT_KEYS.MULTI_TARGET_DAMAGE, label: 'MT Dmg', suffix: '' },
   { key: STAT_KEYS.MULTI_TARGET_CHANCE, label: 'MT Chance', suffix: '' },

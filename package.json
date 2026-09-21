@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "test:calculator": "node --test tests/calculator-math.test.mjs tests/calculator-state.test.mjs",
+    "test:calculator": "node --test tests/calculator-math.test.mjs tests/calculator-state.test.mjs tests/calculator-profile.test.mjs",
     "validate:calculator-data": "node scripts/calculator/validate-data.mjs",
     "dev": "vite",
     "build": "vite build",

@@ -1,6 +1,10 @@
 import { DERIVED_STAT_KEYS, STAT_KEYS } from './statKeys';
 import { getUpgradeValue } from './spUpgradeHelpers';
 
+// Preserve empirical coefficients and operation order. Do not quantize every
+// operation: verified fixed-point boundaries are not yet known. See
+// Documentation/implementationprogress/calculation-evidence-and-precision.md.
+
 const DEFAULT_TORMENT_STATE = {
   critDamageReduction: 0,
 };
@@ -87,7 +91,7 @@ function addStat(result, statKey, value) {
 function finalizeSourceStats(sourceResult) {
   return {
     ...sourceResult.additiveStats,
-    [STAT_KEYS.ACCELERATION]: toNumber(sourceResult.accelerationMultiplier) || 1,
+    [STAT_KEYS.ACCELERATION]: toNumber(sourceResult.accelerationMultiplier),
   };
 }
 
@@ -148,7 +152,7 @@ function getRuneBonusStats(optionValue, rune = null) {
       return { [STAT_KEYS.CRIT_DAMAGE]: 50 };
 
     case '15% Accel':
-      return { [STAT_KEYS.ACCELERATION]: 15 };
+      return { [STAT_KEYS.ACCELERATION]: 14.99 };
 
     case '3 MC':
       return { [STAT_KEYS.MULTI_CRIT]: 3 };
@@ -182,9 +186,7 @@ function getRuneBonusStats(optionValue, rune = null) {
       return {};
 
     case '2x Final dmg':
-      return {
-        [STAT_KEYS.FINAL_DAMAGE]: toNumber(rune?.finalDamageBase),
-      };
+      return {};
 
     default:
       return {};
@@ -227,6 +229,7 @@ function getRuneRaceStatKey(raceValue) {
 }
 
 function getRuneAwakeningStats(rune) {
+  if (toNumber(rune?.runeLevel) !== 15) return {};
   const awakening = rune?.runeAwakening ?? 'None';
   const stats = {};
 
@@ -258,7 +261,8 @@ function getRuneAwakeningStats(rune) {
 }
 
 function getRuneEnchantStats(rune, runeConstants = {}) {
-  const enchantValueTable = runeConstants.RUNE_ENCHANT_VALUE_TABLE ?? {};
+  const table = runeConstants.RUNE_ENCHANT_VALUE_TABLE ?? {};
+  const enchantValueTable = { ...table, 9: table[8] };
   const attackDamageLevel = toNumber(rune?.enchantAttackDamage);
   const attackSpeedLevel = toNumber(rune?.enchantAttackSpeed);
   const accelerationLevel = toNumber(rune?.enchantAcceleration);
@@ -310,7 +314,10 @@ export function calculateRuneSourceStats(runeLoadouts = [], runeConstants = {}) 
     );
 
     runeLayout.primaryRows.forEach((row) => {
-      const baseValue = toNumber(rune[row.baseField]);
+      const rawBaseValue = toNumber(rune[row.baseField]);
+      const baseValue = runeType === 'cosmos' && row.statKey === STAT_KEYS.ACCELERATION ? Math.min(10, rawBaseValue)
+        : runeType === 'chaos' && row.statKey === STAT_KEYS.FINAL_DAMAGE ? Math.min(5, rawBaseValue) * (toNumber(rune.runeLevel) >= 10 && rune.runeBonusTen === '2x Final dmg' ? 2 : 1)
+        : rawBaseValue;
       const yellowValue = row.hasLevelYellowBonus
         ? getRuneYellowBonusAmount(row.statKey, rune.runeLevel)
         : 0;
@@ -361,11 +368,14 @@ export function calculateRuneSourceStats(runeLoadouts = [], runeConstants = {}) 
       );
     });
 
+    const seenBonuses = new Set();
     [
-      { value: rune.runeBonusTen, label: '+10' },
-      { value: rune.runeBonusFifteen, label: '+15' },
+      { value: toNumber(rune.runeLevel) >= 10 ? rune.runeBonusTen : 'None', label: '+10' },
+      { value: toNumber(rune.runeLevel) === 15 ? rune.runeBonusFifteen : 'None', label: '+15' },
       { value: rune.runeTran, label: '@tran' },
     ].forEach(({ value, label }) => {
+      if (seenBonuses.has(value)) return;
+      seenBonuses.add(value);
       const bonusStats = getRuneBonusStats(value, rune);
 
       Object.entries(bonusStats).forEach(([statKey, statValue]) => {
@@ -431,6 +441,12 @@ export function calculateRuneSourceStats(runeLoadouts = [], runeConstants = {}) 
         })
       );
     }
+    for (const [statKey, value] of Object.entries(rune.manualModifiers ?? {})) {
+      if (!['attackDamage', 'attackSpeed', 'critDamage', 'critChance'].includes(statKey)) continue;
+      addStat(result, statKey, value);
+      result.breakdown.push(createBreakdownEntry({ source: 'runes', entryId: runeEntryId, entryName: 'Manual rune modifier', statKey, appliedValue: toNumber(value) }));
+    }
+    result.flags = { ...result.flags, bypassSuperShield: Boolean(result.flags?.bypassSuperShield || (runeType === 'cosmos' && toNumber(rune.runeLevel) >= 10 && rune.runeBonusTen === '-SS & Refund')) };
   });
 
   return finalizeSourceResult(result);
@@ -568,18 +584,44 @@ export function calculateTormentSourceStats(tormentState = null) {
   return finalizeSourceResult(result);
 }
 
-export function calculateBuffSourceStats(buffState = null) {
+export function calculateBuffSourceStats(buffState = null, settings = {}, units = []) {
   const result = createEmptySourceResult();
-
-  if (buffState) {
-    result.breakdown.push(
-      createBreakdownEntry({
-        source: 'buffs',
-        entryName: 'buffState',
-      })
-    );
+  const buffs = buffState ?? {};
+  const present = unitId => units.some(u => u.unitId === unitId && toNumber(u.count) > 0);
+  const grant = (name, values) => Object.entries(values).forEach(([statKey, value]) => {
+    addStat(result, statKey, value);
+    if (value) result.breakdown.push(createBreakdownEntry({ source: 'buffs', entryName: name, statKey, appliedValue: value }));
+  });
+  const team = settings.tocMode ? 0 : toNumber(buffs.teamBuffCount);
+  grant('Full Team Buff', { attackDamage: team * 27, attackSpeed: team * 27, critChance: team * 13.5 });
+  grant('Bless', { attackDamage: toNumber(buffs.bless) * 20 });
+  grant('Power Banker', { attackDamage: (buffs.powerBanker ? 50 : 0) + (buffs.powerBankerPlus ? 60 : 0) });
+  grant('Solo Crit Gem', { critChance: buffs.critGem ? 20 : 0 });
+  grant('Artifact', { critChance: present('artifact') ? 20 : 0 });
+  const factor = buffs.superBuff ? 1.33 : buffs.superBuffPlus ? 1.5 : 1;
+  for (const [unitId, statKey, amount] of [['xelnaga-kerrigan','critChance',10],['amon','attackDamage',30],['terra-tron','critChance',10],['spec-ops-nova','attackSpeed',15],['spear-of-adun','critDamage',30],['overmind','critDamage',30]]) {
+    if (present(unitId)) grant(unitId, { [statKey]: amount * factor });
   }
+  return finalizeSourceResult(result);
+}
 
+export function calculateManualSourceStats(input = {}, name = 'manual') {
+  const result = createEmptySourceResult();
+  if (input.enabled) for (const [statKey, value] of Object.entries(input.stats ?? {})) {
+    if (!(statKey in result.additiveStats)) continue;
+    const combineMode = applyRuneStat(result, statKey, value);
+    result.breakdown.push(createBreakdownEntry({ source: name, entryName: name, statKey, appliedValue: toNumber(value), combineMode }));
+  }
+  return finalizeSourceResult(result);
+}
+
+export function calculateProgressionSourceStats(settings = {}) {
+  const result = createEmptySourceResult();
+  const gp = Math.max(0, Math.min(400, toNumber(settings.gp)));
+  addStat(result, 'attackDamage', Math.max(0, gp - 24) * 5);
+  addStat(result, 'finalDamage', settings.title === 'The Zero' ? Math.max(0, Math.min(11, toNumber(settings.theZeroLevel)) - 3) * 2 : 0);
+  result.breakdown.push(createBreakdownEntry({ source: 'progression', entryName: 'GP and The Zero', rawValue: settings, appliedValue: { ...result.additiveStats } }));
+  result.gpCountThreshold = gp <= 8 ? 1 : gp <= 20 ? 2 : gp <= 32 ? 3 : 4;
   return finalizeSourceResult(result);
 }
 
@@ -650,7 +692,7 @@ function calculateCombatStats(rawStats, tormentState = null) {
     critDamageWithTorment: calculateCritDamageWithTorment(rawStats, tormentState),
     averageMultiCrit: averageMultiCritResult.value,
     averageMultiCritReady: !averageMultiCritResult.placeholder,
-    accelerationMultiplier: toNumber(rawStats[STAT_KEYS.ACCELERATION]) || 1,
+    accelerationMultiplier: toNumber(rawStats[STAT_KEYS.ACCELERATION]),
   };
 }
 
@@ -664,6 +706,10 @@ export function calculateProfileStats({
   difficultyState = null,
   tormentState = null,
   buffState = null,
+  calculatorSettings = {},
+  units = [],
+  sandboxState = {},
+  additionalRuneState = {},
   runeConstants = {},
   upgradeGroupMap = {},
 }) {
@@ -671,7 +717,7 @@ export function calculateProfileStats({
   const spUpgradeSource = calculateSpUpgradeSourceStats(spInvestments, upgradeGroupMap);
   const difficultySource = calculateDifficultySourceStats(difficultyState);
   const tormentSource = calculateTormentSourceStats(tormentState);
-  const buffSource = calculateBuffSourceStats(buffState);
+  const buffSource = calculateBuffSourceStats(buffState, calculatorSettings, units);
 
   const sources = {
     runes: runeSource,
@@ -679,16 +725,28 @@ export function calculateProfileStats({
     difficulty: difficultySource,
     torment: tormentSource,
     buffs: buffSource,
+    progression: calculateProgressionSourceStats(calculatorSettings),
+    sandbox: calculateManualSourceStats(sandboxState, 'sandbox'),
+    additionalRune: calculateManualSourceStats(additionalRuneState, 'additionalRune'),
   };
 
   const rawStats = mergeFinalSourceStats(Object.values(sources));
-  const displayStats = calculateDisplayStats(rawStats, tormentState);
-  const combatStats = calculateCombatStats(rawStats, tormentState);
+  const cappedStats = { ...rawStats, attackDamage: Math.min(4000, rawStats.attackDamage), multiCrit: Math.min(45, rawStats.multiCrit), armorReduction: Math.min(60, rawStats.armorReduction) };
+  const flower = units.filter(u => u.unitId === 'flower').reduce((sum, u) => sum + toNumber(u.count), 0) >= 3;
+  const unitAdjustedStats = { ...cappedStats, attackDamage: cappedStats.attackDamage + (flower ? 20 : 0), attackSpeed: cappedStats.attackSpeed + (flower ? 15 : 0), skillDamage: cappedStats.skillDamage + (flower ? 40 : 0) };
+  const displayStats = calculateDisplayStats(cappedStats, tormentState);
+  const combatStats = { ...calculateCombatStats(unitAdjustedStats, tormentState), stats: unitAdjustedStats,
+    attackDamageFactor: 1 + unitAdjustedStats.attackDamage / 100, finalDamageFactor: 1 + unitAdjustedStats.finalDamage / 100,
+    sdGemMultiplier: buffState?.sdGem === 'SD' ? 1.5 : buffState?.sdGem === 'SD+' ? 1.67 : 1,
+    bypassSuperShield: Boolean(runeSource.flags?.bypassSuperShield), gpCountThreshold: sources.progression.gpCountThreshold,
+    pendingEffects: units.some(u => u.unitId === 'overmind' && toNumber(u.count) > 0) ? ['Overmind uptime and stack effects'] : [],
+  };
 
   return {
     sources,
     sourceBreakdown: flattenSourceBreakdowns(sources),
     rawStats,
+    cappedStats,
     displayStats,
     combatStats,
   };

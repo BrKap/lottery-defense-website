@@ -408,7 +408,7 @@ export const RUNE_ENCHANT_ROWS = [
 ];
 
 export function getRuneEnchantDisplayValue(valueKey, enchantLevel) {
-  const level = Number(enchantLevel) || 0;
+  const level = Math.min(Number(enchantLevel) || 0, 8);
   const row = RUNE_ENCHANT_VALUE_TABLE[level] ?? RUNE_ENCHANT_VALUE_TABLE[0];
   const value = Number(row?.[valueKey] ?? 0);
 

@@ -157,7 +157,11 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
         level: calculatorSettings.torment,
         critDamageReduction: 0,
       },
-      buffState: null,
+      buffState: state.buffState,
+      calculatorSettings,
+      units,
+      sandboxState: state.sandboxState,
+      additionalRuneState: state.additionalRuneState,
       runeConstants: calculatorConfig,
       upgradeGroupMap,
     });
@@ -167,11 +171,14 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
     calculatorSettings.difficulty,
     calculatorSettings.title,
     calculatorSettings.torment,
+    state.buffState, state.sandboxState, state.additionalRuneState, calculatorSettings, units,
   ]);
 
   const profileStats = {
-    ...profileSummary.rawStats,
+    ...profileSummary.cappedStats,
     ...profileSummary.displayStats,
+    uncappedAttackDamage: profileSummary.rawStats.attackDamage,
+    uncappedCritDamage: profileSummary.rawStats.critDamage,
   };
 
   return (
@@ -188,6 +195,7 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
 
       {activeTab === 'main' && (
         <MainTab
+          buffs={state.buffState}
           calculatorSettings={calculatorSettings}
           derivedStats={derivedStats}
           selectedUnitId={selectedUnitId}
@@ -227,7 +235,7 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
           removeNormalJewel={handleRemoveNormalJewel}
         />
       )}
-      {activeTab === 'buffs' && <BuffsTab />}
+      {activeTab === 'buffs' && <BuffsTab buffs={state.buffState} setBuffs={setField('buffState')} sandbox={state.sandboxState} setSandbox={setField('sandboxState')} additionalRune={state.additionalRuneState} setAdditionalRune={setField('additionalRuneState')} />}
       {activeTab === 'presets' && (
         <PresetsTab
           presetName={calculatorSettings.presetName}

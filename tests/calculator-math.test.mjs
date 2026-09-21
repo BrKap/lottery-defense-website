@@ -37,8 +37,8 @@ test('Calculator stat and upgrade calculations', async t => {
       assert.equal(totals.totalEpOverall, 105);
     });
     await t.test('Profile multiplies independent acceleration sources', () => {
-      const actual = stats.calculateProfileStats({ runeLoadouts: [{ ...baseRune, runeBonusTen: '15% Accel' }], runeConstants: runes, spInvestments: { infinite: { 'accel-inf-': 10 } }, upgradeGroupMap: upgrades.UPGRADE_GROUP_MAP });
-      near(actual.rawStats.acceleration, 1.158418, 'profile acceleration');
+      const actual = stats.calculateProfileStats({ runeLoadouts: [{ ...baseRune, runeLevel: '10', runeBonusTen: '15% Accel' }], runeConstants: runes, spInvestments: { infinite: { 'accel-inf-': 10 } }, upgradeGroupMap: upgrades.UPGRADE_GROUP_MAP });
+      near(actual.rawStats.acceleration, 1.158317268, 'profile acceleration');
     });
     await t.test('Investment helper rejects negative and fractional spending', () => {
       const upgrade = upgrades.UPGRADE_GROUP_MAP.rookie.upgrades.find(u => u.id === 'atk-dmg-i');
