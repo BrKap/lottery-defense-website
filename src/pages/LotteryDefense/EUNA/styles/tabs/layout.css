@@ -1,6 +1,16 @@
 .calculator-page {
   display: grid;
   gap: 1rem;
+  min-width: 0;
+}
+
+.calculator-page > * {
+  min-width: 0;
+}
+
+.unit-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .calculator-hero {

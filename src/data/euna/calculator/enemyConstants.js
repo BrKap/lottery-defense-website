@@ -1,0 +1,12 @@
+const difficultyNames = ['Practice','Very Easy','Easy','Normal','Hard','Very Hard','Hell','Inferno','Lunatic','Holic','Epic','Ultimate','Impossible','The Final','Hall of Fame'];
+const inflicted = [140,130,115,100,85,70,60,50,40,35,30,25,20,15,5];
+const ad = [0,0,0,0,0,0,0,0,10,15,20,20,30,50,100];
+const acceleration = [0,0,0,0,0,0,0,0,0,0,5,10,20,30,50];
+export const DIFFICULTY_DATA = Object.fromEntries(difficultyNames.map((name,i) => [name,{ damageInflicted: inflicted[i], attackDamageSubtraction: ad[i], accelerationReduction: acceleration[i] }]));
+const fd = [0,10,20,30,40,50,60,70,80,90,92,94,96,97,97,97,97,97,97,97,97];
+const cd = [0,10,20,30,40,50,60,65,70,75,80,83,86,89,92,95,98,99,99,99,99];
+export const TORMENT_DATA = Object.fromEntries(fd.map((value,i) => [i,{ key:i, label:i < 17 ? String(i) : ['M','LeS','LeSS','LeSSS'][i-17], finalDamageSubtraction:value, critDamageReduction:cd[i], damageTakenReduction:i === 18 ? 50 : i === 19 ? 75 : i === 20 ? 89.1 : 0, attackSpeedReduction:i === 19 ? 33 : i === 20 ? 66 : 0 }]));
+const classic = [[115,19750,0.00001,118,0,70],[180,50000,50000,216,88,98],[190,50000,50000,228,168,98],[200,50000,50000,240,252,98],[210,50000,50000,294,372,98],[220,50000,50000,322,495,98],[240,50000,50000,336,803,86],[250,50000,50000,350,1033,86],[260,50000,50000,416,1270,86],[269,50000,50000,432,1694,81],[270,50000,50000,432,1570,81],[300,50000,50000,480,2470,62]];
+export const CLASSIC_ENEMIES = Object.fromEntries(classic.map(([round,hp,shield,count,armor,seconds]) => [round,{round,hp,shield,count,armor,shieldArmor:armor,seconds}]));
+const toc = [[70,161,60,5],[71,168,62,6],[72,200,62,6],[73,208,62,7],[74,216,63,7],[75,232,63,8],[76,288,65,8],[77,315,65,9],[78,380,65,9],[79,451,65,10],[80,528,68,10],[81,637,68,11],[82,756,72,11],[83,784,72,12],[84,855,72,12]];
+export const TOC_ENEMIES = Object.fromEntries(toc.map(([round,count,seconds,torment]) => [round,{round,hp:50000,shield:50000,count,armor:1530,shieldArmor:1530,seconds,torment}]));

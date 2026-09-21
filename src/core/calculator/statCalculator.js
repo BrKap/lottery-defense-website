@@ -1,5 +1,7 @@
 import { DERIVED_STAT_KEYS, STAT_KEYS } from './statKeys';
 import { getUpgradeValue } from './spUpgradeHelpers';
+import { ADDITIONAL_RUNE_STAT_KEYS, canUseBless } from './buffOptions';
+import { calculateCriticalExpectation } from './criticalCalculation';
 
 // Preserve empirical coefficients and operation order. Do not quantize every
 // operation: verified fixed-point boundaries are not yet known. See
@@ -592,9 +594,9 @@ export function calculateBuffSourceStats(buffState = null, settings = {}, units 
     addStat(result, statKey, value);
     if (value) result.breakdown.push(createBreakdownEntry({ source: 'buffs', entryName: name, statKey, appliedValue: value }));
   });
-  const team = settings.tocMode ? 0 : toNumber(buffs.teamBuffCount);
+  const team = settings.tocMode ? 0 : Math.max(0, Math.min(2, Math.floor(toNumber(buffs.teamBuffCount))));
   grant('Full Team Buff', { attackDamage: team * 27, attackSpeed: team * 27, critChance: team * 13.5 });
-  grant('Bless', { attackDamage: toNumber(buffs.bless) * 20 });
+  grant('Bless', { attackDamage: canUseBless(settings.title) ? toNumber(buffs.bless) * 20 : 0 });
   grant('Power Banker', { attackDamage: (buffs.powerBanker ? 50 : 0) + (buffs.powerBankerPlus ? 60 : 0) });
   grant('Solo Crit Gem', { critChance: buffs.critGem ? 20 : 0 });
   grant('Artifact', { critChance: present('artifact') ? 20 : 0 });
@@ -613,6 +615,20 @@ export function calculateManualSourceStats(input = {}, name = 'manual') {
     result.breakdown.push(createBreakdownEntry({ source: name, entryName: name, statKey, appliedValue: toNumber(value), combineMode }));
   }
   return finalizeSourceResult(result);
+}
+
+export function calculateAdditionalRuneSourceStats(input = {}, runeLoadouts = [], methods = {}) {
+  const method = input.method ?? 'manual';
+  if (!input.enabled) return finalizeSourceResult(createEmptySourceResult());
+  let values = input.stats;
+  if (method !== 'manual') {
+    const calculate = Object.hasOwn(methods, method) ? methods[method] : null;
+    if (typeof calculate !== 'function') return { ...finalizeSourceResult(createEmptySourceResult()), unavailable: true, method };
+    const ownedRunes = runeLoadouts.filter(r => ['slot-1','slot-2','slot-3','slot-4','slot-5'].includes(r.slot));
+    values = calculate(structuredClone(ownedRunes));
+  }
+  const stats = Object.fromEntries(ADDITIONAL_RUNE_STAT_KEYS.map(key => [key, toNumber(values?.[key])]));
+  return { ...calculateManualSourceStats({ enabled: true, stats }, 'additionalRune'), method };
 }
 
 export function calculateProgressionSourceStats(settings = {}) {
@@ -663,8 +679,8 @@ function calculateCritDamageWithTorment(rawStats, tormentState = null) {
 
 function calculateAverageMultiCrit(rawStats) {
   return {
-    placeholder: true,
-    value: toNumber(rawStats[STAT_KEYS.MULTI_CRIT]),
+    placeholder: false,
+    value: calculateCriticalExpectation(rawStats).averageMC,
   };
 }
 
@@ -710,6 +726,8 @@ export function calculateProfileStats({
   units = [],
   sandboxState = {},
   additionalRuneState = {},
+  ownedRuneLoadouts = runeLoadouts,
+  additionalRuneMethods = {},
   runeConstants = {},
   upgradeGroupMap = {},
 }) {
@@ -727,7 +745,7 @@ export function calculateProfileStats({
     buffs: buffSource,
     progression: calculateProgressionSourceStats(calculatorSettings),
     sandbox: calculateManualSourceStats(sandboxState, 'sandbox'),
-    additionalRune: calculateManualSourceStats(additionalRuneState, 'additionalRune'),
+    additionalRune: calculateAdditionalRuneSourceStats(additionalRuneState, ownedRuneLoadouts, additionalRuneMethods),
   };
 
   const rawStats = mergeFinalSourceStats(Object.values(sources));
@@ -736,7 +754,9 @@ export function calculateProfileStats({
   const unitAdjustedStats = { ...cappedStats, attackDamage: cappedStats.attackDamage + (flower ? 20 : 0), attackSpeed: cappedStats.attackSpeed + (flower ? 15 : 0), skillDamage: cappedStats.skillDamage + (flower ? 40 : 0) };
   const displayStats = calculateDisplayStats(cappedStats, tormentState);
   const combatStats = { ...calculateCombatStats(unitAdjustedStats, tormentState), stats: unitAdjustedStats,
-    attackDamageFactor: 1 + unitAdjustedStats.attackDamage / 100, finalDamageFactor: 1 + unitAdjustedStats.finalDamage / 100,
+    attackDamageFactor: 1 + (unitAdjustedStats.attackDamage - toNumber(difficultyState?.attackDamageSubtraction)) / 100,
+    finalDamageFactor: 1 + (unitAdjustedStats.finalDamage - toNumber(tormentState?.finalDamageSubtraction)) / 100,
+    speedPenaltyFactor: (1-toNumber(difficultyState?.accelerationReduction)/100) * (1-toNumber(tormentState?.attackSpeedReduction)/100),
     sdGemMultiplier: buffState?.sdGem === 'SD' ? 1.5 : buffState?.sdGem === 'SD+' ? 1.67 : 1,
     bypassSuperShield: Boolean(runeSource.flags?.bypassSuperShield), gpCountThreshold: sources.progression.gpCountThreshold,
     pendingEffects: units.some(u => u.unitId === 'overmind' && toNumber(u.count) > 0) ? ['Overmind uptime and stack effects'] : [],

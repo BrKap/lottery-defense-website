@@ -12,7 +12,7 @@ export default function CalculatorHero({ settings, versionConfig }) {
         </div>
         <h2>{versionConfig.name} Calculator</h2>
         <p>
-          UI scaffolding for the main dashboard, presets, and future DPS logic.
+          Configure your build and compare ordinary attacks with the selected enemy scenario.
         </p>
       </div>
       <div className="hero-summary-pills">

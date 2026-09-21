@@ -23,7 +23,8 @@ export async function withCalculatorModules(callback) {
       server.ssrLoadModule('/src/core/calculator/jewelHelpers.js'),
       server.ssrLoadModule('/src/core/calculator/createUnitEntry.js'),
     ]);
-    return await callback({ stats, upgrades, runes, helpers, units, keys, config: configModule.eunaVersionConfig.calculator, state, jewels, entries });
+    const scenario = await server.ssrLoadModule('/src/core/calculator/scenarioCalculator.js');
+    return await callback({ stats, upgrades, runes, helpers, units, keys, config: configModule.eunaVersionConfig.calculator, state, jewels, entries, scenario, loadModule: path => server.ssrLoadModule(path) });
   } finally {
     await server.close();
   }

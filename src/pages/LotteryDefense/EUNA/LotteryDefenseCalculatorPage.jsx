@@ -5,10 +5,8 @@ import {
   removeJewelAndAssignments,
   updateJewelField,
 } from '../../../core/calculator/jewelHelpers';
-import {
-  calculateMockRequiredDps,
-  calculateMockUnitDps
-} from "../../../core/calculator/damageCalculation";
+import { resolveScenario, calculateScenario } from '../../../core/calculator/scenarioCalculator';
+import { calculateArmyDamage } from '../../../core/calculator/damageCalculation';
 import { loadCalculatorState, saveCalculatorState, hydrateUnits, appendBuildUnit, updateBuildUnit, updateRuneField } from '../../../core/calculator/calculatorState';
 import { calculateProfileStats } from '../../../core/calculator/statCalculator';
 import FloatingStatsPanel from './calculator/FloatingStatsPanel';
@@ -52,25 +50,7 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
     link.href = url; link.download = 'calculator-recovery.json'; link.click(); URL.revokeObjectURL(url);
   };
 
-  const derivedStats = useMemo(() => {
-    const overallDps = units.reduce((sum, unit) => {
-      const perUnit = calculateMockUnitDps(unit);
-      return sum + perUnit * unit.count;
-    }, 0);
-
-    const requiredDps = calculateMockRequiredDps(calculatorSettings);
-    const completionPercent = requiredDps > 0
-      ? (overallDps / requiredDps) * 100
-      : 0;
-
-    return {
-      overallDps,
-      requiredDps,
-      completionPercent,
-      totalUnits: units.reduce((sum, unit) => sum + unit.count, 0),
-      uniqueUnits: units.length,
-    };
-  }, [calculatorSettings, units]);
+  const resolvedScenario = useMemo(() => resolveScenario(calculatorSettings), [calculatorSettings]);
 
   const selectedRuneSlot = calculatorSettings.runeSlot ?? runeSlots[0]?.value;
   const activeRune = runeLoadouts.find((rune) => rune.slot === selectedRuneSlot) ?? runeLoadouts[0];
@@ -152,16 +132,18 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
       difficultyState: {
         difficulty: calculatorSettings.difficulty,
         title: calculatorSettings.title,
+        ...resolvedScenario.difficulty,
       },
       tormentState: {
         level: calculatorSettings.torment,
-        critDamageReduction: 0,
+        ...resolvedScenario.torment,
       },
       buffState: state.buffState,
       calculatorSettings,
       units,
       sandboxState: state.sandboxState,
       additionalRuneState: state.additionalRuneState,
+      ownedRuneLoadouts: runeLoadouts,
       runeConstants: calculatorConfig,
       upgradeGroupMap,
     });
@@ -171,9 +153,13 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
     calculatorSettings.difficulty,
     calculatorSettings.title,
     calculatorSettings.torment,
-    state.buffState, state.sandboxState, state.additionalRuneState, calculatorSettings, units,
+    state.buffState, state.sandboxState, state.additionalRuneState, calculatorSettings, units, runeLoadouts, resolvedScenario,
   ]);
 
+  const scenario = useMemo(() => calculateScenario(calculatorSettings, profileSummary, state.buffState), [calculatorSettings, profileSummary, state.buffState]);
+  const army = useMemo(() => calculateArmyDamage(units, { profile: profileSummary, scenario, jewels, config: calculatorConfig, penetrationEnabled: calculatorSettings.penetrationEnabled }), [units, profileSummary, scenario, jewels, calculatorConfig, calculatorSettings.penetrationEnabled]);
+  const derivedStats = { requiredDps: scenario.requiredDps, overallDps: null, completionPercent: null,
+    totalUnits: units.reduce((sum, unit) => sum + unit.count, 0), uniqueUnits: new Set(units.map(u => u.unitId)).size };
   const profileStats = {
     ...profileSummary.cappedStats,
     ...profileSummary.displayStats,
@@ -195,7 +181,11 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
 
       {activeTab === 'main' && (
         <MainTab
+          army={army}
+          scenario={scenario}
           buffs={state.buffState}
+          sandbox={state.sandboxState}
+          additionalRune={state.additionalRuneState}
           calculatorSettings={calculatorSettings}
           derivedStats={derivedStats}
           selectedUnitId={selectedUnitId}
@@ -235,7 +225,7 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
           removeNormalJewel={handleRemoveNormalJewel}
         />
       )}
-      {activeTab === 'buffs' && <BuffsTab buffs={state.buffState} setBuffs={setField('buffState')} sandbox={state.sandboxState} setSandbox={setField('sandboxState')} additionalRune={state.additionalRuneState} setAdditionalRune={setField('additionalRuneState')} />}
+      {activeTab === 'buffs' && <BuffsTab title={calculatorSettings.title} buffs={state.buffState} setBuffs={setField('buffState')} sandbox={state.sandboxState} setSandbox={setField('sandboxState')} additionalRune={state.additionalRuneState} setAdditionalRune={setField('additionalRuneState')} />}
       {activeTab === 'presets' && (
         <PresetsTab
           presetName={calculatorSettings.presetName}
@@ -244,6 +234,7 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
       )}
       {activeTab === 'build-units' && (
         <BuildUnitsTab
+          results={army.entries}
           jewels={jewels}
           selectedUnitId={selectedUnitId}
           setSelectedUnitId={setSelectedUnitId}

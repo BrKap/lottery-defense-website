@@ -26,10 +26,10 @@ export function createDefaultCalculatorState(config) {
     units: config.unitLibrary.filter((_, i) => [0,1,3].includes(i)).map(u => unitInputs(createUnitEntry(u))),
     jewels: createLegendaryJewelsState({ legendaryJewels: config.JEWEL_TYPES.filter(j => j.id !== 'square'), normalJewelDefault: config.NORMAL_JEWEL_DEFAULT }),
     runeLoadouts: config.createInitialRuneLoadouts().map(r => ({ ...r, manualModifiers: { attackDamage: 0, attackSpeed: 0, critDamage: 0, critChance: 0 } })), spInvestments: buildInitialInvestments(config.UPGRADE_GROUPS),
-    buffState: { teamBuffCount: 0, bless: 0, sdGem: 'none', critGem: false, shieldMaster: false, superShield: false,
+    buffState: { teamBuffCount: 0, bless: 1, selectUpgradeEnabled: false, sdGem: 'none', critGem: false, shieldMaster: false, superShield: false,
       powerBanker: false, powerBankerPlus: false, superBuff: false, superBuffPlus: false, purifierEnabled: false,
       supports: { corruption: 0, godOfTime: 0, stukov: 0, warfield: 0, talTempest: 0, tassadar: 0, vessel: 0 } },
-    sandboxState: { enabled: false, stats: { ...zeroStats } }, additionalRuneState: { enabled: false, stats: { ...zeroStats } },
+    sandboxState: { enabled: false, stats: { ...zeroStats } }, additionalRuneState: { enabled: false, method: 'manual', stats: { ...zeroStats } },
     resourceSettings: { includeInfinite: true, gpEstimatesEnabled: false, bankEnabled: false },
     recovered: [], migrationNotes: [],
   };
@@ -85,6 +85,8 @@ export function normalizeCalculatorState(saved, config) {
     if (!allowed.includes(settings[key])) notes.push(`Saved ${key} (${settings[key]}) has no supported option. Choose a supported value.`);
   }
   for (const key of ['buffState','sandboxState','additionalRuneState','resourceSettings']) state[key] = merge(defaults[key], saved[key], key);
+  state.buffState.teamBuffCount = finite(state.buffState.teamBuffCount, 0, 'buffState.teamBuffCount', 0, 2, true);
+  state.buffState.bless = finite(state.buffState.bless, 1, 'buffState.bless', 1, 3, true);
   const list = (key, fallback) => {
     if (saved[key] === undefined) return fallback;
     if (Array.isArray(saved[key])) return saved[key];

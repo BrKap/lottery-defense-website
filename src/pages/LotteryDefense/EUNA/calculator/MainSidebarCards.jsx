@@ -1,6 +1,7 @@
 import React from 'react';
 import { useCalculatorConfig } from '../../../../core/calculator/CalculatorConfigContext';
 import { InfoRow, MiniStat } from '../../../../components/common/Stats';
+import { canUseBless, getSuperBuffGem, getRuneAffixOptions } from '../../../../core/calculator/buffOptions';
 
 function SelectValue({
   value,
@@ -20,7 +21,7 @@ function SelectValue({
           : option;
 
         return (
-          <option key={normalized.value} value={normalized.value}>
+          <option key={normalized.value} value={normalized.value} disabled={normalized.disabled}>
             {normalized.label}
           </option>
         );
@@ -103,7 +104,7 @@ function RunePanelFrame({
       return (
         <SelectValue
           value={normalizedRune[field]}
-          options={options}
+          options={field === 'runeBonusTen' ? getRuneAffixOptions(options, normalizedRune.runeBonusFifteen, normalizedRune[field]) : field === 'runeBonusFifteen' ? getRuneAffixOptions(options, normalizedRune.runeBonusTen, normalizedRune[field]) : options}
           onChange={(value) => onFieldChange(field, value)}
           className={editableClassName}
         />
@@ -320,23 +321,28 @@ export function RuneEditorCard({ runeData, onFieldChange, slotDisplayValue }) {
         showSlotDropdown={false}
         variant="editor"
       />
-      <details><summary>Additional manual modifiers</summary>
-        {Object.entries({ attackDamage: 'AD', attackSpeed: 'AS', critDamage: 'CD', critChance: 'CC' }).map(([key, label]) => <label className="stacked-field" key={key}>{label}
-          <input type="number" aria-label={`${slotDisplayValue ?? runeData.slot} manual ${label}`} value={runeData.manualModifiers?.[key] ?? 0} onChange={event => onFieldChange('manualModifiers', { ...runeData.manualModifiers, [key]: Number(event.target.value) || 0 })} />
-        </label>)}
-      </details>
     </article>
   );
 }
 
-export function BuffPreviewCard({ buffs = {}, tocMode = false }) {
+export function BuffPreviewCard({ buffs = {}, tocMode = false, title, sandbox = {}, additionalRune = {} }) {
   return (
     <section className="card sidebar-card">
       <h3>Buff Preview</h3>
       <div className="sidebar-list-grid">
         <InfoRow label="Full Team Buff" value={tocMode ? 'Inactive in ToC' : buffs.teamBuffCount ?? 0} />
-        <InfoRow label="Bless" value={buffs.bless ?? 0} />
+        <InfoRow label="Bless" value={canUseBless(title) ? buffs.bless ?? 1 : 'Requires Divine'} />
         <InfoRow label="SD Gem" value={buffs.sdGem ?? 'none'} />
+        <InfoRow label="Solo Crit Gem" value={buffs.critGem ? 'On' : 'Off'} />
+        <InfoRow label="Power Banker Gem" value={buffs.powerBanker ? 'On' : 'Off'} />
+        <InfoRow label="Power Banker Gem +" value={buffs.powerBankerPlus ? 'On' : 'Off'} />
+        <InfoRow label="Super Buff Gem" value={getSuperBuffGem(buffs) === 'standard' ? 'Super Buff' : getSuperBuffGem(buffs) === 'plus' ? 'Super Buff +' : 'None'} />
+        <InfoRow label="Select Upgrade+" value={buffs.selectUpgradeEnabled ? 'On (effect pending)' : 'Off'} />
+        <InfoRow label="Super Shield" value={buffs.superShield ? 'On' : 'Off'} />
+        <InfoRow label="Shield Master" value={buffs.shieldMaster ? 'On' : 'Off'} />
+        <InfoRow label="Sandbox" value={sandbox.enabled ? 'On' : 'Off'} />
+        <InfoRow label="Additional Rune" value={additionalRune.enabled ? (additionalRune.method === 'manual' || !additionalRune.method ? 'Manual' : 'Automatic (pending)') : 'Off'} />
+        <InfoRow label="Purifier" value={buffs.purifierEnabled ? 'Pending' : 'Off'} />
       </div>
     </section>
   );
@@ -357,14 +363,21 @@ export function BuildMetaCard({ units }) {
   );
 }
 
-export function CreepStatsCard() {
+export function CreepStatsCard({ scenario }) {
   return (
     <section className="card sidebar-card">
       <h3>Enemy Creep Stats</h3>
       <div className="sidebar-list-grid creep-stats-grid">
-        <InfoRow label="Shield / HP" value="50000" />
-        <InfoRow label="Armor" value="216" />
-        <InfoRow label="Shield Armor" value="88" />
+        {scenario?.status === 'supported' ? <>
+          <InfoRow label="HP" value={scenario.enemy.hp} />
+          <InfoRow label="Shield" value={scenario.enemy.shield} />
+          <InfoRow label="Armor" value={scenario.enemy.armor} />
+          <InfoRow label="Shield Armor" value={scenario.enemy.shieldArmor} />
+          <InfoRow label="Enemy Count" value={scenario.enemy.count} />
+          <InfoRow label="Duration (seconds)" value={scenario.enemy.seconds} />
+          <InfoRow label="Reduced HP" value={scenario.reducedHP} />
+          <InfoRow label="Reduced Shield" value={scenario.reducedShield} />
+        </> : <p>Enemy statistics unavailable for this scenario.</p>}
       </div>
     </section>
   );

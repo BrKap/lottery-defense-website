@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useCalculatorConfig } from '../../../../../core/calculator/CalculatorConfigContext';
 import { splitJewelsByType } from '../../../../../core/calculator/jewelHelpers';
 
@@ -30,16 +30,15 @@ function JewelCard({ jewel, config, onFieldChange, onRemove }) {
 }
 export default function JewelsTab({ jewels, updateJewel, addNormalJewel, removeNormalJewel }) {
   const { calculator } = useCalculatorConfig();
-  const [typeId, setTypeId] = useState('square');
   const { legendaryJewels, normalJewels } = useMemo(() => splitJewelsByType(jewels), [jewels]);
   return <section className="tab-panel-card jewels-tab-layout">
-    <div className="section-heading-row card"><div><h3>Jewels</h3><p>Configure jewels and equip them on individual build entries. Combat effects are pending implementation.</p></div></div>
+    <div className="section-heading-row card"><div><h3>Jewels</h3><p>Configure jewels and equip them on individual build entries. AD, AS, FD and acceleration apply to ordinary attacks. Special effects remain pending.</p></div></div>
     {[["Legendary Jewels", legendaryJewels], ["Square Jewels", normalJewels]].map(([label, entries]) => <div className="jewels-section" key={label}>
       <div className="jewels-section-header"><h4>{label}</h4></div>
-      <div className="jewels-grid-layout">{entries.map(jewel => <JewelCard key={jewel.entryId} jewel={jewel} config={calculator} onFieldChange={updateJewel} onRemove={removeNormalJewel} />)}</div>
+      <div className="jewels-grid-layout">{entries.map(jewel => <JewelCard key={jewel.entryId} jewel={jewel} config={calculator} onFieldChange={updateJewel} onRemove={removeNormalJewel} />)}
+        {label === 'Square Jewels' && <button type="button" className="jewel-add-card" aria-label="Add Square Jewel" onClick={() => addNormalJewel('square')}><span className="jewel-add-symbol" aria-hidden="true">+</span><span className="jewel-add-label">Add Square Jewel</span></button>}
+      </div>
     </div>)}
-    <div className="card"><label>Jewel type <select value={typeId} onChange={event => setTypeId(event.target.value)}>
-      {calculator.JEWEL_TYPES.filter(j => !j.legendary).map(j => <option key={j.id} value={j.id}>{j.name}</option>)}
-    </select></label><button type="button" className="primary-button" onClick={() => addNormalJewel(typeId)}>Add Normal Jewel</button></div>
   </section>;
 }
+

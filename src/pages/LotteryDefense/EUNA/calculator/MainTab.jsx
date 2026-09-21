@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useCalculatorConfig } from '../../../../core/calculator/CalculatorConfigContext';
-import { formatNumber } from '../../../../core/calculator/calculatorHelpers';
+import { formatCombatNumber as formatNumber } from '../../../../core/calculator/calculatorHelpers';
 import { CheckboxField, InputField, NumberField } from '../../../../components/common/FormFields';
 import { StatTile } from '../../../../components/common/Stats';
 import {
@@ -10,36 +10,6 @@ import {
   UnitRecipeCostCard,
 } from './MainSidebarCards';
 
-function summarizeUnits(units) {
-  const grouped = new Map();
-
-  units.forEach((unit) => {
-    const key = unit.id ?? unit.name;
-    const current = grouped.get(key);
-
-    const perUnitDps = Number(unit.mockDpsPerUnit ?? 0);
-    const fullDps = perUnitDps * Number(unit.count ?? 0);
-
-    if (current) {
-      current.totalCount += Number(unit.count ?? 0);
-      current.totalDps += fullDps;
-      current.variants += 1;
-      return;
-    }
-
-    grouped.set(key, {
-      key,
-      name: unit.name,
-      race: unit.race,
-      totalCount: Number(unit.count ?? 0),
-      totalDps: fullDps,
-      variants: 1,
-    });
-  });
-
-  return Array.from(grouped.values()).sort((a, b) => b.totalDps - a.totalDps);
-}
-
 export default function MainTab({
   calculatorSettings,
   derivedStats,
@@ -47,6 +17,10 @@ export default function MainTab({
   updateSetting,
   activeRune,
   buffs,
+  sandbox,
+  additionalRune,
+  scenario,
+  army = { groups: [], ordinaryDps: 0, incomplete: false, uniqueUnits: 0 },
 }) {
   const { calculator } = useCalculatorConfig();
   const {
@@ -57,9 +31,7 @@ export default function MainTab({
     TOC_FLOORS,
   } = calculator;
 
-  const summarizedUnits = useMemo(() => {
-    return summarizeUnits(units);
-  }, [units]);
+  const summarizedUnits = army.groups;
 
   return (
     <div className="calculator-main-layout">
@@ -69,7 +41,7 @@ export default function MainTab({
           updateSetting={updateSetting}
           runeData={activeRune}
         />
-        <BuffPreviewCard buffs={buffs} tocMode={calculatorSettings.tocMode} />
+        <BuffPreviewCard buffs={buffs} tocMode={calculatorSettings.tocMode} title={calculatorSettings.title} sandbox={sandbox} additionalRune={additionalRune} />
       </aside>
 
       <div className="calculator-center-column">
@@ -104,12 +76,14 @@ export default function MainTab({
               onChange={(value) => updateSetting('torment', value)}
             />
 
-            <InputField
+            {calculatorSettings.tocMode ? <InputField label="ToC Floor" value={calculatorSettings.tocFloor}
+              options={TOC_FLOORS.includes(calculatorSettings.tocFloor) ? TOC_FLOORS : [calculatorSettings.tocFloor, ...TOC_FLOORS]}
+              onChange={value => updateSetting('tocFloor', Number(value))} /> : <InputField
               label="Round"
               value={calculatorSettings.round}
               options={CLASSIC_ROUNDS.includes(calculatorSettings.round) ? CLASSIC_ROUNDS : [calculatorSettings.round, ...CLASSIC_ROUNDS]}
               onChange={(value) => updateSetting('round', Number(value))}
-            />
+            />}
 
             <InputField
               label="Mode"
@@ -132,12 +106,11 @@ export default function MainTab({
               onChange={(value) => updateSetting('startingSp', value)}
             />
 
-            <NumberField
+            <InputField
               label="The Zero Level"
               value={calculatorSettings.theZeroLevel ?? 0}
-              min={0}
-              max={11}
-              onChange={(value) => updateSetting('theZeroLevel', value)}
+              options={Array.from({ length: 12 }, (_, i) => i)}
+              onChange={(value) => updateSetting('theZeroLevel', Number(value))}
             />
 
             <CheckboxField
@@ -145,10 +118,8 @@ export default function MainTab({
               checked={calculatorSettings.tocMode}
               onChange={(checked) => updateSetting('tocMode', checked)}
             />
+            <CheckboxField label="Apply unit penetration" checked={calculatorSettings.penetrationEnabled} onChange={checked => updateSetting('penetrationEnabled', checked)} />
             <NumberField label="GP" value={calculatorSettings.gp} min={0} max={400} onChange={value => updateSetting('gp', value)} />
-            {calculatorSettings.tocMode && <InputField label="ToC Floor" value={calculatorSettings.tocFloor}
-              options={TOC_FLOORS.includes(calculatorSettings.tocFloor) ? TOC_FLOORS : [calculatorSettings.tocFloor, ...TOC_FLOORS]}
-              onChange={value => updateSetting('tocFloor', Number(value))} />}
           </div>
         </section>
 
@@ -156,26 +127,30 @@ export default function MainTab({
           <div className="section-heading-row">
             <div>
               <h3>DPS Overview</h3>
-              <p>Placeholder totals until the full formulas are added.</p>
+              <p>Ordinary attacks include unit and jewel modifiers. Special abilities, support uptime and final army totals are pending.</p>
             </div>
           </div>
 
+          {army.incomplete && <p role="status">This subtotal excludes entries with pending or unavailable damage.</p>}
+          {scenario.status !== 'supported' && <p role="status">{scenario.reason}</p>}
+          {scenario.mode === 'ToC' && <p>ToC uses floor {scenario.enemy.round}, torment {scenario.torment.label}, and 2.5% damage inflicted. Classic difficulty and torment selections are inactive.</p>}
           <div className="overview-stats-grid">
             <StatTile
-              label="Your DPS"
-              value={formatNumber(derivedStats.overallDps ?? 0)}
+              label="Ordinary DPS subtotal"
+              value={scenario.status === 'supported' ? formatNumber(army.ordinaryDps) : 'Unavailable'}
               accent="blue"
             />
             <StatTile
               label="Required DPS"
-              value={formatNumber(derivedStats.requiredDps ?? 0)}
+              value={derivedStats.requiredDps === null ? 'Unavailable' : formatNumber(derivedStats.requiredDps)}
               accent="gold"
             />
             <StatTile
               label="Clear %"
-              value={`${Number(derivedStats.completionPercent ?? 0).toFixed(2)}%`}
+              value="Pending"
               accent="purple"
             />
+            <StatTile label="Unique unit types" value={army.uniqueUnits} accent="green" />
             <StatTile
               label="Total Units"
               value={formatNumber(derivedStats.totalUnits ?? 0)}
@@ -202,17 +177,17 @@ export default function MainTab({
                   <th>Unit</th>
                   <th>Total Count</th>
                   <th>Variants</th>
-                  <th>Total DPS</th>
+                  <th>Ordinary DPS</th>
                 </tr>
               </thead>
 
               <tbody>
                 {summarizedUnits.map((unit) => (
-                  <tr key={unit.key}>
+                  <tr key={unit.unitId}>
                     <td className="unit-name-cell">{unit.name}</td>
                     <td>{formatNumber(unit.totalCount)}</td>
                     <td>{formatNumber(unit.variants)}</td>
-                    <td>{formatNumber(unit.totalDps)}</td>
+                    <td>{formatNumber(unit.totalDps)}{unit.incomplete ? ' (partial)' : ''}</td>
                   </tr>
                 ))}
 
@@ -232,9 +207,10 @@ export default function MainTab({
       </div>
 
       <aside className="calculator-sidebar right-sidebar">
-        <CreepStatsCard />
+        <CreepStatsCard scenario={scenario} />
         <UnitRecipeCostCard />
       </aside>
     </div>
   );
 }
+
