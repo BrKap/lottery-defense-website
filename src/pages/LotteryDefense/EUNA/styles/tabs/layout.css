@@ -50,6 +50,7 @@
 .calculator-center-column,
 .calculator-sidebar {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
 }
 
@@ -154,3 +155,10 @@
     padding-bottom: 0.25rem;
   }
 }
+
+/* Keep wide controls inside their own scrolling regions. */
+.calculator-main-layout > *, .calculator-center-column, .calculator-sidebar,
+.sp-upgrade-content, .config-card, .stacked-field, .rune-editor-grid > * { min-width: 0; }
+.calculator-tabs > button { flex-shrink: 0; }
+.preset-layout-grid input, .preset-layout-grid select { max-width: 100%; }
+.config-card { overflow-wrap: anywhere; }

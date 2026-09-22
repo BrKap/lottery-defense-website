@@ -100,3 +100,12 @@
 .floating-stat-value {
   align-self: center;
 }
+.floating-stats-wrapper.is-docked { position: static; flex-wrap: wrap; width: 100%; }
+.is-docked .floating-stats-panel, .is-docked .floating-stats-side-panel { width: 100%; max-height: none; }
+.is-docked .floating-stats-grid { grid-template-columns: repeat(auto-fit, minmax(115px, 1fr)); }
+.is-docked .floating-stats-header { cursor: default; }
+.floating-stats-panel, .floating-stats-side-panel { overflow-y: auto; }
+.floating-stats-wrapper:not(.is-docked) .floating-stats-panel { width: 260px; }
+@media (max-width: 600px) {
+  .floating-stats-wrapper:not(.is-docked) { flex-direction: column; max-height: 90vh; overflow-y: auto; }
+}

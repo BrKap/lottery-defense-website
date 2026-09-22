@@ -1,0 +1,576 @@
+[
+  {
+    "category": "AD",
+    "groupId": "rookie",
+    "order": 1,
+    "upgradeId": "atk-dmg-i",
+    "weight": 3.0
+  },
+  {
+    "category": "AS",
+    "groupId": "rookie",
+    "order": 2,
+    "upgradeId": "atk-spd-i",
+    "weight": 3.0
+  },
+  {
+    "category": "Combat",
+    "groupId": "rookie",
+    "order": 3,
+    "upgradeId": "skl-dmg",
+    "weight": 5.0
+  },
+  {
+    "category": "Util",
+    "groupId": "rookie",
+    "order": 4,
+    "upgradeId": "exchange",
+    "weight": 1.0
+  },
+  {
+    "category": "CC",
+    "groupId": "beginner",
+    "order": 5,
+    "upgradeId": "crit-chance-i",
+    "weight": 1.0
+  },
+  {
+    "category": "Util",
+    "groupId": "beginner",
+    "order": 6,
+    "upgradeId": "mvmt-spd",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "beginner",
+    "order": 7,
+    "upgradeId": "atk-range",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "beginner",
+    "order": 8,
+    "upgradeId": "mineral-",
+    "weight": 1.0
+  },
+  {
+    "category": "Util",
+    "groupId": "beginner",
+    "order": 9,
+    "upgradeId": "gas-",
+    "weight": 2.0
+  },
+  {
+    "category": "Util",
+    "groupId": "beginner",
+    "order": 10,
+    "upgradeId": "life",
+    "weight": 1.0
+  },
+  {
+    "category": "AD",
+    "groupId": "amateur",
+    "order": 11,
+    "upgradeId": "atk-dmg-ii",
+    "weight": 2.0
+  },
+  {
+    "category": "AS",
+    "groupId": "amateur",
+    "order": 12,
+    "upgradeId": "atk-spd-ii",
+    "weight": 1.5
+  },
+  {
+    "category": "Combat",
+    "groupId": "amateur",
+    "order": 13,
+    "upgradeId": "skl-dmg-ii",
+    "weight": 4.0
+  },
+  {
+    "category": "Util",
+    "groupId": "amateur",
+    "order": 14,
+    "upgradeId": "gas-rev",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "amateur",
+    "order": 15,
+    "upgradeId": "unit-xp-",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "amateur",
+    "order": 16,
+    "upgradeId": "interest-rate",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "amateur",
+    "order": 17,
+    "upgradeId": "max-upg",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "amateur",
+    "order": 18,
+    "upgradeId": "sell-lotto",
+    "weight": 0
+  },
+  {
+    "category": "AD",
+    "groupId": "professional",
+    "order": 19,
+    "upgradeId": "atk-dmg-iii",
+    "weight": 1.0
+  },
+  {
+    "category": "AS",
+    "groupId": "professional",
+    "order": 20,
+    "upgradeId": "atk-spd-iii",
+    "weight": 0.5
+  },
+  {
+    "category": "Combat",
+    "groupId": "professional",
+    "order": 21,
+    "upgradeId": "skl-dmg-iii",
+    "weight": 3.0
+  },
+  {
+    "category": "Util",
+    "groupId": "professional",
+    "order": 22,
+    "upgradeId": "basic-rank",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "professional",
+    "order": 23,
+    "upgradeId": "upg-rev-i-",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "professional",
+    "order": 24,
+    "upgradeId": "upg-rev-ii-",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "professional",
+    "order": 25,
+    "upgradeId": "rank-rev",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "professional",
+    "order": 26,
+    "upgradeId": "card-rev",
+    "weight": 0
+  },
+  {
+    "category": "CC",
+    "groupId": "expert",
+    "order": 27,
+    "upgradeId": "crit-chance-ii",
+    "weight": 0.5
+  },
+  {
+    "category": "Util",
+    "groupId": "expert",
+    "order": 28,
+    "upgradeId": "mvmt-spd-ii",
+    "weight": 10.0
+  },
+  {
+    "category": "CD",
+    "groupId": "expert",
+    "order": 29,
+    "upgradeId": "crit-dmg-i",
+    "weight": 2.5
+  },
+  {
+    "category": "MC",
+    "groupId": "expert",
+    "order": 30,
+    "upgradeId": "multi-crit-i",
+    "weight": 1.0
+  },
+  {
+    "category": "Util",
+    "groupId": "expert",
+    "order": 31,
+    "upgradeId": "unit-lottery-lotto",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "expert",
+    "order": 32,
+    "upgradeId": "gas-lottery-lotto",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "expert",
+    "order": 33,
+    "upgradeId": "bank-lotto",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "expert",
+    "order": 34,
+    "upgradeId": "horse-xp",
+    "weight": 0
+  },
+  {
+    "category": "Combat",
+    "groupId": "master",
+    "order": 35,
+    "upgradeId": "atk-range-ii",
+    "weight": 0
+  },
+  {
+    "category": "Combat",
+    "groupId": "master",
+    "order": 36,
+    "upgradeId": "armor-reduct",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "master",
+    "order": 37,
+    "upgradeId": "lottery-rev",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "master",
+    "order": 38,
+    "upgradeId": "cooldown",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "master",
+    "order": 39,
+    "upgradeId": "mineral-lotto",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "master",
+    "order": 40,
+    "upgradeId": "gas-lotto",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "master",
+    "order": 41,
+    "upgradeId": "xp-limit",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "master",
+    "order": 42,
+    "upgradeId": "xp-lotto",
+    "weight": 0
+  },
+  {
+    "category": "AD",
+    "groupId": "divine",
+    "order": 43,
+    "upgradeId": "team-atk-dmg",
+    "weight": 1.0
+  },
+  {
+    "category": "AS",
+    "groupId": "divine",
+    "order": 44,
+    "upgradeId": "team-atk-spd",
+    "weight": 1.0
+  },
+  {
+    "category": "CC",
+    "groupId": "divine",
+    "order": 45,
+    "upgradeId": "team-crit-chance",
+    "weight": 0.5
+  },
+  {
+    "category": "Util",
+    "groupId": "divine",
+    "order": 46,
+    "upgradeId": "team-exchange",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "divine",
+    "order": 47,
+    "upgradeId": "max-energy",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "divine",
+    "order": 48,
+    "upgradeId": "sp-bank",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "divine",
+    "order": 49,
+    "upgradeId": "kill-energy",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "divine",
+    "order": 50,
+    "upgradeId": "kill-exp",
+    "weight": 0
+  },
+  {
+    "category": "FD",
+    "groupId": "the-one",
+    "order": 51,
+    "upgradeId": "final-dmg",
+    "weight": 0.25
+  },
+  {
+    "category": "AD",
+    "groupId": "the-one",
+    "order": 52,
+    "upgradeId": "atk-dmg-iv",
+    "weight": 1.0
+  },
+  {
+    "category": "AS",
+    "groupId": "the-one",
+    "order": 53,
+    "upgradeId": "atk-spd-iv",
+    "weight": 0.5
+  },
+  {
+    "category": "CC",
+    "groupId": "the-one",
+    "order": 54,
+    "upgradeId": "crit-chance-iii",
+    "weight": 0.5
+  },
+  {
+    "category": "Util",
+    "groupId": "the-one",
+    "order": 55,
+    "upgradeId": "dbl-upg",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "the-one",
+    "order": 56,
+    "upgradeId": "rank-rev-ii",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "the-one",
+    "order": 57,
+    "upgradeId": "sxd-rev",
+    "weight": 0
+  },
+  {
+    "category": "Accel",
+    "groupId": "the-one",
+    "order": 58,
+    "upgradeId": "accel",
+    "weight": 0.24
+  },
+  {
+    "category": "MT D",
+    "groupId": "the-one-ii",
+    "order": 59,
+    "upgradeId": "mt-dmg",
+    "weight": 1.0
+  },
+  {
+    "category": "MT C",
+    "groupId": "the-one-ii",
+    "order": 60,
+    "upgradeId": "mt-chance",
+    "weight": 0.2
+  },
+  {
+    "category": "MT MC",
+    "groupId": "the-one-ii",
+    "order": 61,
+    "upgradeId": "mt-multi-crit",
+    "weight": 0.5
+  },
+  {
+    "category": "CD",
+    "groupId": "the-one-ii",
+    "order": 62,
+    "upgradeId": "crit-dmg-ii",
+    "weight": 1.5
+  },
+  {
+    "category": "MC",
+    "groupId": "the-one-ii",
+    "order": 63,
+    "upgradeId": "multi-crit-ii",
+    "weight": 1.0
+  },
+  {
+    "category": "Util",
+    "groupId": "the-one-ii",
+    "order": 64,
+    "upgradeId": "rune-upg",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "the-one-ii",
+    "order": 65,
+    "upgradeId": "xp-limit-ii",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "the-one-ii",
+    "order": 66,
+    "upgradeId": "kill-xp-ii",
+    "weight": 0
+  },
+  {
+    "category": "AD",
+    "groupId": "infinite",
+    "order": 67,
+    "upgradeId": "atk-dmg-inf-",
+    "weight": 0.4
+  },
+  {
+    "category": "AS",
+    "groupId": "infinite",
+    "order": 68,
+    "upgradeId": "atk-spd-inf-",
+    "weight": 0.2
+  },
+  {
+    "category": "CD",
+    "groupId": "infinite",
+    "order": 69,
+    "upgradeId": "crit-dmg-inf-",
+    "weight": 0.5
+  },
+  {
+    "category": "Accel",
+    "groupId": "infinite",
+    "order": 70,
+    "upgradeId": "accel-inf-",
+    "weight": 0.08
+  },
+  {
+    "category": "Util",
+    "groupId": "infinite",
+    "order": 71,
+    "upgradeId": "xp-lotto",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "infinite",
+    "order": 72,
+    "upgradeId": "r-stone-lotto",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "infinite",
+    "order": 73,
+    "upgradeId": "r-stone-rev",
+    "weight": 0
+  },
+  {
+    "category": "ETC",
+    "groupId": "infinite",
+    "order": 74,
+    "upgradeId": "reduce-shield",
+    "weight": 0.05
+  },
+  {
+    "category": "AD",
+    "groupId": "ep",
+    "order": 75,
+    "upgradeId": "atk-dmg-e-",
+    "weight": 4.0
+  },
+  {
+    "category": "AS",
+    "groupId": "ep",
+    "order": 76,
+    "upgradeId": "atk-spd-e-",
+    "weight": 2.0
+  },
+  {
+    "category": "CC",
+    "groupId": "ep",
+    "order": 77,
+    "upgradeId": "crit-chance-e-",
+    "weight": 1.0
+  },
+  {
+    "category": "CD",
+    "groupId": "ep",
+    "order": 78,
+    "upgradeId": "crit-dmg-e-",
+    "weight": 4.0
+  },
+  {
+    "category": "MC",
+    "groupId": "ep",
+    "order": 79,
+    "upgradeId": "multi-crit-e-",
+    "weight": 1.0
+  },
+  {
+    "category": "Combat",
+    "groupId": "ep",
+    "order": 80,
+    "upgradeId": "reduce-armor",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "ep",
+    "order": 81,
+    "upgradeId": "mineral-",
+    "weight": 0
+  },
+  {
+    "category": "Util",
+    "groupId": "ep",
+    "order": 82,
+    "upgradeId": "break-safety",
+    "weight": 0
+  }
+]

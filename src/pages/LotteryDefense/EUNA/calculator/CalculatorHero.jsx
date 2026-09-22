@@ -12,7 +12,7 @@ export default function CalculatorHero({ settings, versionConfig }) {
         </div>
         <h2>{versionConfig.name} Calculator</h2>
         <p>
-          Configure your build and compare ordinary attacks with the selected enemy scenario.
+          Configure your build and compare damage, upgrades and resources for the selected scenario.
         </p>
       </div>
       <div className="hero-summary-pills">

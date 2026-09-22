@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "test:calculator": "node --test tests/calculator-math.test.mjs tests/calculator-state.test.mjs tests/calculator-profile.test.mjs tests/calculator-scenario.test.mjs tests/calculator-ui.test.mjs tests/calculator-combat.test.mjs tests/calculator-battle.test.mjs tests/calculator-resources.test.mjs",
+    "test:calculator": "node --test tests/calculator-math.test.mjs tests/calculator-state.test.mjs tests/calculator-profile.test.mjs tests/calculator-scenario.test.mjs tests/calculator-ui.test.mjs tests/calculator-combat.test.mjs tests/calculator-battle.test.mjs tests/calculator-resources.test.mjs tests/calculator-optimizer.test.mjs tests/calculator-presets.test.mjs",
     "validate:calculator-data": "node scripts/calculator/validate-data.mjs",
     "dev": "vite",
     "build": "vite build",

@@ -75,12 +75,13 @@ function StatsList({ rows, profileStats }) {
   );
 }
 
-export default function FloatingStatsPanel({ profileStats }) {
+export default function FloatingStatsPanel({ profileStats, preferences, onPreferences }) {
   const wrapperRef = useRef(null);
   const dragOffsetRef = useRef({ x: 0, y: 0 });
 
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [showExtras, setShowExtras] = useState(false);
+  const isMinimized = preferences.panelMinimized, showExtras = preferences.panelExtras;
+  const setIsMinimized = update => onPreferences(current=>({...current,panelMinimized:update(current.panelMinimized)}));
+  const setShowExtras = update => onPreferences(current=>({...current,panelExtras:update(current.panelExtras)}));
   const [position, setPosition] = useState(() => ({
     x: Math.max(16, window.innerWidth - 320),
     y: 120,
@@ -102,6 +103,7 @@ export default function FloatingStatsPanel({ profileStats }) {
   };
 
   const handleMouseDown = (event) => {
+    if (preferences.panelDocked) return;
     if (event.target.closest('button')) {
       return;
     }
@@ -155,7 +157,7 @@ export default function FloatingStatsPanel({ profileStats }) {
   return (
     <div
       ref={wrapperRef}
-      className="floating-stats-wrapper"
+      className={`floating-stats-wrapper ${preferences.panelDocked ? 'is-docked' : ''}`}
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
@@ -166,6 +168,7 @@ export default function FloatingStatsPanel({ profileStats }) {
           <h3>Profile Stats</h3>
 
           <div className="floating-stats-actions">
+            <button type="button" onClick={()=>onPreferences(current=>({...current,panelDocked:!current.panelDocked}))}>{preferences.panelDocked ? 'Float' : 'Dock'}</button>
             {!isMinimized && (
               <button
                 type="button"
@@ -178,6 +181,7 @@ export default function FloatingStatsPanel({ profileStats }) {
 
             <button
               type="button"
+              aria-label={isMinimized ? 'Expand profile stats' : 'Minimize profile stats'}
               className="floating-stats-toggle"
               onClick={() => setIsMinimized((current) => !current)}
             >

@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import UpgradeRecommendations from '../UpgradeRecommendations';
 import { formatCombatNumber } from '../../../../../core/calculator/calculatorHelpers';
 import { useCalculatorConfig } from '../../../../../core/calculator/CalculatorConfigContext';
 import {
@@ -16,6 +17,9 @@ export default function SpUpgradesTab({
   resources,
   resourceSettings,
   setResourceSettings,
+  recommendations,
+  optimizerSettings,
+  setOptimizerSettings,
 }) {
   const { calculator } = useCalculatorConfig();
   const { UPGRADE_GROUPS } = calculator;
@@ -103,6 +107,7 @@ export default function SpUpgradesTab({
           </div>
         </div>
 
+        <UpgradeRecommendations result={recommendations} settings={optimizerSettings} setSettings={setOptimizerSettings} onShowGroup={setActiveGroupId} />
         {resources && <section aria-label="Resource budget">
           <h4>Resource budget</h4>
           {Object.entries({ includeInfinite: 'Include Infinite costs in budget', gpEstimatesEnabled: 'Apply GP stat estimates' }).map(([key, label]) => <label key={key} style={{ display: 'block' }}>
@@ -142,7 +147,7 @@ export default function SpUpgradesTab({
                 const totalPrice = getTotalUpgradePrice(upgrade, investedCount);
 
                 return (
-                  <tr key={upgrade.id}>
+                  <tr key={upgrade.id} className={recommendations?.recommendations.some(c => c.groupId === activeGroup.id && c.upgradeId === upgrade.id) ? 'recommended-upgrade' : undefined}>
                     <td>
                       <input
                         type="number"
@@ -161,7 +166,7 @@ export default function SpUpgradesTab({
                       />
                     </td>
                     <td>{upgrade.maxInvestments}</td>
-                    <td>{upgrade.name}</td>
+                    <td>{upgrade.name}{recommendations?.recommendations.some(c => c.groupId === activeGroup.id && c.upgradeId === upgrade.id) && <strong className="upgrade-recommendation-label">Recommended</strong>}</td>
                     <td>{investedCount >= upgrade.maxInvestments ? 'Maxed' : nextPrice ?? 'Unknown'}</td>
                     <td>{totalPrice ?? 'Unknown'}</td>
                   </tr>

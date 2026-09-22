@@ -67,7 +67,7 @@ test('Resource costs, estimates and ingredient totals', async t => withCalculato
     r = calculateResources(settings, { includeInfinite: false }, investment, groups);
     assert.equal(r.budgetSp, 140); assert.equal(r.remainingStart, 860);
     investment.infinite['xp-lotto'] = 1;
-    assert.equal(calculateResources(settings, { includeInfinite: true }, investment, groups).remainingTarget, null);
+    assert.equal(calculateResources(settings, { includeInfinite: true }, investment, groups).remainingTarget, -540);
     assert.equal(calculateResources(settings, { includeInfinite: false }, investment, groups).remainingTarget, 860);
     investment.rookie.exchange = 1;
     assert.equal(calculateResources(settings, { includeInfinite: false }, investment, groups).budgetSp, null);

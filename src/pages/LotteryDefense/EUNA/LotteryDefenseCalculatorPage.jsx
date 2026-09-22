@@ -7,6 +7,8 @@ import {
 } from '../../../core/calculator/jewelHelpers';
 import { resolveScenario } from '../../../core/calculator/scenarioCalculator';
 import { calculateBattle } from '../../../core/calculator/battleCalculation';
+import { changePreset } from '../../../core/calculator/presetHelpers';
+import { calculateUpgradeRecommendations } from '../../../core/calculator/upgradeOptimizer';
 import { calculateResources, calculateIngredients } from '../../../core/calculator/resourceCalculation';
 import { loadCalculatorState, saveCalculatorState, hydrateUnits, appendBuildUnit, updateBuildUnit, updateRuneField } from '../../../core/calculator/calculatorState';
 import { calculateProfileStats } from '../../../core/calculator/statCalculator';
@@ -160,6 +162,7 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
 
   const army = useMemo(() => calculateBattle({ units, profile: baseProfileSummary, settings: calculatorSettings, buffs: state.buffState, jewels, config: calculatorConfig }), [units, baseProfileSummary, calculatorSettings, state.buffState, jewels, calculatorConfig]);
   const { scenario, profile: profileSummary } = army;
+  const recommendations = useMemo(() => calculateUpgradeRecommendations({ algorithmId: state.optimizerSettings.algorithmId, army, units, investments: spInvestments, config: calculatorConfig }), [state.optimizerSettings, army, units, spInvestments, calculatorConfig]);
   const resources = calculateResources(calculatorSettings, state.resourceSettings, spInvestments, calculatorConfig.UPGRADE_GROUPS);
   const ingredients = calculateIngredients(units, calculatorConfig.UNIT_RECIPES, state.buffState.supports);
   const derivedStats = { requiredDps: scenario.requiredDps, overallDps: null, completionPercent: null,
@@ -181,6 +184,7 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
         <button type="button" onClick={exportRecovery}>Download original saved data</button>
       </section>}
       <CalculatorHero settings={calculatorSettings} versionConfig={versionConfig} />
+      <FloatingStatsPanel profileStats={profileStats} preferences={state.uiSettings} onPreferences={setField('uiSettings')} />
       <CalculatorTabs tabs={calculatorConfig.TAB_OPTIONS} activeTab={activeTab} onChange={setActiveTab} />
 
       {activeTab === 'main' && (
@@ -207,6 +211,9 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
 
       {activeTab === 'sp-upgrades' && (
         <SpUpgradesTab
+          recommendations={recommendations}
+          optimizerSettings={state.optimizerSettings}
+          setOptimizerSettings={setField('optimizerSettings')}
           resources={resources}
           resourceSettings={state.resourceSettings}
           setResourceSettings={setField('resourceSettings')}
@@ -236,8 +243,10 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
       {activeTab === 'buffs' && <BuffsTab title={calculatorSettings.title} buffs={state.buffState} setBuffs={setField('buffState')} sandbox={state.sandboxState} setSandbox={setField('sandboxState')} additionalRune={state.additionalRuneState} setAdditionalRune={setField('additionalRuneState')} />}
       {activeTab === 'presets' && (
         <PresetsTab
-          presetName={calculatorSettings.presetName}
-          updateSetting={updateSetting}
+          state={state}
+          config={calculatorConfig}
+          blocked={loaded.blocked}
+          onAction={action => { if (!loaded.blocked) setState(changePreset(state, action, calculatorConfig)); }}
         />
       )}
       {activeTab === 'build-units' && (
@@ -253,7 +262,6 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
         />
       )}
 
-      <FloatingStatsPanel profileStats={profileStats} />
     </section>
   );
 }

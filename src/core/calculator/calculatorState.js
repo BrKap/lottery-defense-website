@@ -31,6 +31,9 @@ export function createDefaultCalculatorState(config) {
       supports: { corruption: 0, godOfTime: 0, stukov: 0, warfield: 0, talTempest: 0, tassadar: 0, vessel: 0 } },
     sandboxState: { enabled: false, stats: { ...zeroStats } }, additionalRuneState: { enabled: false, method: 'manual', stats: { ...zeroStats } },
     resourceSettings: { includeInfinite: true, gpEstimatesEnabled: false },
+    optimizerSettings: { algorithmId: 'amon-estimate' },
+    presetLibrary: { activeId: null, items: [], deleted: null },
+    uiSettings: { panelDocked: true, panelMinimized: false, panelExtras: false },
     recovered: [], migrationNotes: [],
   };
 }
@@ -70,6 +73,12 @@ export function normalizeCalculatorState(saved, config) {
     return result;
   };
   const state = { ...saved, ...defaults, recovered };
+  if (saved.presetLibrary !== undefined) {
+    const library = saved.presetLibrary;
+    const validEntry = p => object(p) && typeof p.id === 'string' && typeof p.name === 'string' && object(p.build);
+    if (object(library) && Array.isArray(library.items) && library.items.every(validEntry) && new Set(library.items.map(p=>p.id)).size === library.items.length && (library.activeId === null || library.items.some(p=>p.id===library.activeId)) && (!library.deleted || validEntry(library.deleted))) state.presetLibrary = library;
+    else recover('presetLibrary', library, 'Invalid preset library retained in recovery; current build preserved.');
+  }
   // Unknown top-level fields survive round-trip without being interpreted.
   for (const key of Object.keys(saved)) if (!(key in defaults)) state[key] = saved[key];
   state.calculatorSettings = merge(defaults.calculatorSettings, saved.calculatorSettings, 'settings');
@@ -84,7 +93,7 @@ export function normalizeCalculatorState(saved, config) {
   for (const [key, allowed] of Object.entries({ title: config.TITLES, difficulty: config.DIFFICULTIES, gameMode: config.GAME_MODES, round: config.CLASSIC_ROUNDS, tocFloor: config.TOC_FLOORS })) {
     if (!allowed.includes(settings[key])) notes.push(`Saved ${key} (${settings[key]}) has no supported option. Choose a supported value.`);
   }
-  for (const key of ['buffState','sandboxState','additionalRuneState','resourceSettings']) state[key] = merge(defaults[key], saved[key], key);
+  for (const key of ['buffState','sandboxState','additionalRuneState','resourceSettings','optimizerSettings','uiSettings']) state[key] = merge(defaults[key], saved[key], key);
   delete state.resourceSettings.bankEnabled; // Purchased bank levels always generate their returns.
   state.buffState.teamBuffCount = finite(state.buffState.teamBuffCount, 0, 'buffState.teamBuffCount', 0, 2, true);
   state.buffState.bless = finite(state.buffState.bless, 1, 'buffState.bless', 1, 3, true);

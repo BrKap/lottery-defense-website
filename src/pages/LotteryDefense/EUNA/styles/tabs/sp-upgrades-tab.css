@@ -69,3 +69,6 @@
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   }
 }
+.upgrade-recommendations { padding: 1rem; margin-bottom: 1rem; border: 1px solid #5b7095; border-radius: 12px; }
+.recommended-upgrade { background: #25394e; }
+.upgrade-recommendation-label { display: block; color: #b6ed8b; }
