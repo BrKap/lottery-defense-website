@@ -26,8 +26,8 @@ test('Calculator controls and shared result rendering', async t => withCalculato
     const build = render(BuildUnitsTab, { jewels: saved.jewels, results: army.entries, units, selectedUnitId: 'amon', setSelectedUnitId: noop, addUnit: noop, removeUnit: noop, updateUnit: noop });
     const formatted = formatNumber(army.entries[0].fullDps);
     assert(main.includes(formatted)); assert(build.includes(formatted));
-    assert.equal((build.match(/<th(?: |>|\n)/g) ?? []).length, 15);
-    assert.equal((build.match(/<td(?: |>|\n)/g) ?? []).length, 15);
+    assert.equal((build.match(/<th(?: |>|\n)/g) ?? []).length, 16);
+    assert.equal((build.match(/<td(?: |>|\n)/g) ?? []).length, 16);
     assert.match(build, /Calculation details/);
     assert.doesNotMatch(main + build, /mock|spreadsheet|Calculate!/i);
   });

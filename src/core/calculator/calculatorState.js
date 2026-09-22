@@ -87,6 +87,7 @@ export function normalizeCalculatorState(saved, config) {
   for (const key of ['buffState','sandboxState','additionalRuneState','resourceSettings']) state[key] = merge(defaults[key], saved[key], key);
   state.buffState.teamBuffCount = finite(state.buffState.teamBuffCount, 0, 'buffState.teamBuffCount', 0, 2, true);
   state.buffState.bless = finite(state.buffState.bless, 1, 'buffState.bless', 1, 3, true);
+  for (const key of Object.keys(defaults.buffState.supports)) state.buffState.supports[key] = finite(state.buffState.supports[key], 0, `buffState.supports.${key}`, 0, 999, true);
   const list = (key, fallback) => {
     if (saved[key] === undefined) return fallback;
     if (Array.isArray(saved[key])) return saved[key];
@@ -124,7 +125,7 @@ export function normalizeCalculatorState(saved, config) {
     const result = { ...unitInputs(createUnitEntry(template)), ...unitInputs(unit) };
     if (typeof result.entryId !== 'string' || !result.entryId || entryIds.has(result.entryId)) result.entryId = id();
     entryIds.add(result.entryId);
-    for (const [key, max] of Object.entries({ count: template.maxCount ?? 999, level: 11, lb: 6, armor: 1000, overmindStacks: 999 })) result[key] = finite(result[key], 0, `units.${i}.${key}`, 0, max, key !== 'armor');
+    for (const [key, max] of Object.entries({ count: template.maxCount ?? 999, level: 11, lb: 6, armor: 1000, overmindStacks: 5 })) result[key] = finite(result[key], 0, `units.${i}.${key}`, 0, max, key !== 'armor');
     if (!config.RANK_OPTIONS.includes(result.rank)) notes.push(`${template.name}: saved rank needs reselection.`);
     result.rank = typeof result.rank === 'string' ? result.rank : 'B';
     result.jewel = typeof result.jewel === 'string' ? result.jewel : 'none';
@@ -196,7 +197,7 @@ export function updateRuneField(runes, slot, field, value) {
 export function updateBuildUnit(units, entryId, field, value) {
   return units.map(unit => {
     if (unit.entryId !== entryId) return unit;
-    const max = { count: unit.unitId === 'artifact' ? 1 : 999, level: 11, lb: 6, armor: 1000 }[field];
+    const max = { count: unit.unitId === 'artifact' ? 1 : 999, level: 11, lb: 6, armor: 1000, overmindStacks: 5 }[field];
     const next = max === undefined ? value : Math.max(0, Math.min(max, field === 'armor' ? Number(value) || 0 : Math.floor(Number(value) || 0)));
     return { ...unit, [field]: next };
   });

@@ -56,7 +56,8 @@ export function calculateUnitDamage(unit, { profile, scenario, jewels, config, t
   const gradeMultiplier = table[Math.min(table.length - 1, Math.floor(raceBonus))];
   const gradedBase = template.gradeModel === 'artifact' ? 100 + grade * 0.5 : template.baseDamage * gradeMultiplier;
   const countBonus = noCountBonus.has(unit.unitId) ? 0 : totalCount > 8 ? -10 * (totalCount - 8) : totalCount > 0 && totalCount <= (profile.combatStats.gpCountThreshold ?? 1) ? 30 : 0;
-  const unitAD = rank.ad + level * 5 + armor + lbAD[lb] + countBonus + j.attackDamage;
+  const overmindAD = Math.max(0, Math.min(5, Math.floor(Number(unit.overmindStacks ?? 0)))) * 10;
+  const unitAD = rank.ad + level * 5 + armor + lbAD[lb] + countBonus + j.attackDamage + overmindAD;
   const effectiveAD = unitAD + stats.attackDamage + 15.5 - scenario.difficulty.attackDamageSubtraction;
   const adFactor = 1 + effectiveAD / 100;
   const fdFactor = 1 + (stats.finalDamage + j.finalDamage + (lb === 6 ? 30 : 0) - scenario.torment.finalDamageSubtraction) / 100;
@@ -82,6 +83,10 @@ export function calculateArmyDamage(units, context) {
   const counts = new Map();
   units.forEach(unit => counts.set(unit.unitId, (counts.get(unit.unitId) ?? 0) + Number(unit.count)));
   const entries = units.map(unit => calculateUnitDamage(unit, { ...context, totalCount: counts.get(unit.unitId) }));
+  return summarizeArmyEntries(entries);
+}
+
+export function summarizeArmyEntries(entries) {
   const groups = new Map();
   for (const entry of entries) {
     const group = groups.get(entry.unitId) ?? { unitId: entry.unitId, name: entry.name, totalCount: 0, variants: 0, totalDps: 0, incomplete: false };
@@ -92,5 +97,5 @@ export function calculateArmyDamage(units, context) {
     groups.set(entry.unitId, group);
   }
   return { entries, groups: [...groups.values()].sort((a, b) => b.totalDps - a.totalDps), ordinaryDps: entries.reduce((sum, entry) => sum + (entry.fullDps ?? 0), 0),
-    incomplete: entries.some(entry => entry.count > 0 && entry.fullDps === null), totalUnits: units.reduce((sum, unit) => sum + Number(unit.count), 0), uniqueUnits: [...counts.values()].filter(count => count > 0).length };
+    incomplete: entries.some(entry => entry.count > 0 && entry.fullDps === null), totalUnits: entries.reduce((sum, entry) => sum + entry.count, 0), uniqueUnits: [...groups.values()].filter(group => group.totalCount > 0).length };
 }

@@ -5,8 +5,8 @@ import {
   removeJewelAndAssignments,
   updateJewelField,
 } from '../../../core/calculator/jewelHelpers';
-import { resolveScenario, calculateScenario } from '../../../core/calculator/scenarioCalculator';
-import { calculateArmyDamage } from '../../../core/calculator/damageCalculation';
+import { resolveScenario } from '../../../core/calculator/scenarioCalculator';
+import { calculateBattle } from '../../../core/calculator/battleCalculation';
 import { loadCalculatorState, saveCalculatorState, hydrateUnits, appendBuildUnit, updateBuildUnit, updateRuneField } from '../../../core/calculator/calculatorState';
 import { calculateProfileStats } from '../../../core/calculator/statCalculator';
 import FloatingStatsPanel from './calculator/FloatingStatsPanel';
@@ -125,7 +125,7 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
     setNotice(count ? 'Jewel removed. Affected units now have no jewel equipped.' : 'Jewel removed.');
   };
 
-  const profileSummary = useMemo(() => {
+  const baseProfileSummary = useMemo(() => {
     return calculateProfileStats({
       runeLoadouts: activeRune ? [activeRune] : [],
       spInvestments,
@@ -156,8 +156,8 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
     state.buffState, state.sandboxState, state.additionalRuneState, calculatorSettings, units, runeLoadouts, resolvedScenario,
   ]);
 
-  const scenario = useMemo(() => calculateScenario(calculatorSettings, profileSummary, state.buffState), [calculatorSettings, profileSummary, state.buffState]);
-  const army = useMemo(() => calculateArmyDamage(units, { profile: profileSummary, scenario, jewels, config: calculatorConfig, penetrationEnabled: calculatorSettings.penetrationEnabled }), [units, profileSummary, scenario, jewels, calculatorConfig, calculatorSettings.penetrationEnabled]);
+  const army = useMemo(() => calculateBattle({ units, profile: baseProfileSummary, settings: calculatorSettings, buffs: state.buffState, jewels, config: calculatorConfig }), [units, baseProfileSummary, calculatorSettings, state.buffState, jewels, calculatorConfig]);
+  const { scenario, profile: profileSummary } = army;
   const derivedStats = { requiredDps: scenario.requiredDps, overallDps: null, completionPercent: null,
     totalUnits: units.reduce((sum, unit) => sum + unit.count, 0), uniqueUnits: new Set(units.map(u => u.unitId)).size };
   const profileStats = {

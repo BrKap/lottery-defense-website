@@ -1,4 +1,5 @@
 import React from 'react';
+import { SUPPORT_OPTIONS } from '../../../../../core/calculator/supportCalculation';
 import { ADDITIONAL_RUNE_STAT_KEYS, ADDITIONAL_RUNE_METHODS, canUseBless, getSuperBuffGem } from '../../../../../core/calculator/buffOptions';
 const statLabels = { attackDamage: 'Attack Damage', attackSpeed: 'Attack Speed', critDamage: 'Critical Damage', critChance: 'Critical Chance', finalDamage: 'Final Damage', acceleration: 'Acceleration %', skillDamage: 'Skill Damage', armorReduction: 'Armor Reduction', multiCrit: 'Multi Crit' };
 function ManualStats({ label, value, onChange, additional = false }) {
@@ -30,7 +31,10 @@ export default function BuffsTab({ title, buffs, setBuffs, sandbox, setSandbox, 
       {[['critGem','Solo Crit Gem'],['powerBanker','Power Banker Gem'],['powerBankerPlus','Power Banker Gem +'],['selectUpgradeEnabled','Select Upgrade+'],['superShield','Super Shield'],['shieldMaster','Shield Master']].map(([key,label]) => <label key={key}><input type="checkbox" checked={buffs[key]} onChange={e => update(key,e.target.checked)} /> {label}</label>)}
     </div>
     {buffs.selectUpgradeEnabled && <p>Select Upgrade+ effect is awaiting calculation details.</p>}
-    <p>SD Gem applies to supported skills, not the displayed base SD. Overmind uptime and support spells are pending.</p>
+    <p>SD Gem applies to supported skills, not the displayed base SD. Flower and Hybridlope counts come from Build Units.</p>
+    <div className="placeholder-config-grid">{SUPPORT_OPTIONS.map(([key, label]) => <label className="stacked-field" key={key}>{label}
+      <input type="number" min="0" max="999" step="1" value={buffs.supports?.[key] ?? 0} onChange={e => update('supports', { ...buffs.supports, [key]: Math.max(0, Math.min(999, Math.floor(Number(e.target.value) || 0))) })} />
+    </label>)}</div>
     <ManualStats label="Sandbox" value={sandbox} onChange={setSandbox} />
     <ManualStats label="Additional Rune" value={additionalRune} onChange={setAdditionalRune} additional />
     <label><input type="checkbox" checked={buffs.purifierEnabled} onChange={e => update('purifierEnabled',e.target.checked)} /> Purifier</label><p>Purifier calculation unavailable.</p>

@@ -64,14 +64,15 @@ export default function BuildUnitsTab({
               <th className="col-level">Lvl</th>
               <th className="col-armor">Armor</th>
               <th className="col-lb">LB</th>
+              <th>Overmind AD stacks</th>
               <th className="col-jewel">Jewel</th>
               <th className="col-damage">Hit Damage</th>
               <th className="col-additional-damage">AD %</th>
               <th className="col-speed">Base Weapon Speed</th>
               <th className="col-speed_reduction">Interval (s)</th>
               <th className="col-hits">Hits</th>
-              <th className="col-dps">Ordinary DPS / Unit</th>
-              <th className="col-full-dps">Ordinary DPS</th>
+              <th className="col-dps">DPS / Unit</th>
+              <th className="col-full-dps">Unit DPS</th>
               <th className="col-actions"></th>
             </tr>
           </thead>
@@ -85,12 +86,16 @@ export default function BuildUnitsTab({
               return (
                 <tr key={unit.entryId}>
                   <td className="unit-name-cell">{unit.name}
+                    {unit.unitId === 'xelnaga-kerrigan' && <label><input type="checkbox" checked={unit.xnkFixedAttacks !== false} onChange={e => updateUnit(unit.entryId, 'xnkFixedAttacks', e.target.checked)} /> Fixed five attacks</label>}
+                    {unit.unitId === 'overmind' && <label>FD buff mode<select value={unit.abilityMode === 'uptime' ? 'uptime' : 'default'} onChange={e => updateUnit(unit.entryId, 'abilityMode', e.target.value)}><option value="default">Full +5 FD</option><option value="uptime">Scale FD by uptime</option></select></label>}
                     {result?.reason && <small role="status">{result.reason}</small>}
                     {d && <details><summary>Calculation details</summary>
                       <p>Grade {d.grade}; base {formatNumber(d.gradedBase)}; effective rank {d.effectiveRank}{d.provisionalRank ? ' (provisional zero bonus)' : ''}.</p>
                       <p>AD factor {d.adFactor.toFixed(4)}; FD factor {d.fdFactor.toFixed(4)}; count bonus {d.countBonus} AD.</p>
                       <p>Crit factor {d.critical.multiplier.toFixed(4)}; average MC {d.critical.averageMC.toFixed(4)}; penetration factor {d.penetrationFactor.toFixed(4)}; damage adjustment {d.damageAdjustment}.</p>
                       <p>Jewel: AD {d.jewelStats.attackDamage}, AS {d.jewelStats.attackSpeed}, FD {d.jewelStats.finalDamage}, acceleration {d.jewelStats.acceleration}%, CDR {d.jewelStats.cooldown}, SD {d.jewelStats.skillDamage}. CDR/SD are retained for supported special effects.</p>
+                      {d.overmindUptime !== undefined && <p>FD uptime: {(d.overmindUptime * 100).toFixed(2)}%. {d.uniqueContribution ? 'Selected unique contribution.' : 'Another Overmind supplies the unique contribution.'}</p>}
+                      {d.artifact && <p>Spell uptime: {(d.artifact.uptime * 100).toFixed(2)}%; ticks: {formatNumber(d.artifact.ticks)}.</p>}
                     </details>}
                   </td>
 
@@ -162,6 +167,7 @@ export default function BuildUnitsTab({
                     />
                   </td>
 
+                  <td><select aria-label={`${unit.name} Overmind AD stacks`} value={unit.overmindStacks ?? 0} onChange={e => updateUnit(unit.entryId, 'overmindStacks', Number(e.target.value))}>{[0,1,2,3,4,5].map(n => <option key={n}>{n}</option>)}</select></td>
                   <td>
                     <select
                       className="table-input input-md"
@@ -187,11 +193,11 @@ export default function BuildUnitsTab({
                   </td>
 
                   <td className="static-cell">
-                    {display(d?.baseInterval)}
+                    {unit.unitId === 'artifact' ? '—' : display(d?.baseInterval)}
                   </td>
-                  <td className="static-cell">{d ? d.interval.toFixed(4) : '—'}</td>
+                  <td className="static-cell">{unit.unitId === 'artifact' ? 'Spell' : d ? d.interval.toFixed(4) : '—'}</td>
                   <td className="static-cell">
-                    {display(d?.attacks)}
+                    {unit.unitId === 'artifact' ? 'Ticks' : display(d?.attacks)}
                   </td>
 
                   <td className="static-cell">
@@ -217,7 +223,7 @@ export default function BuildUnitsTab({
 
             {units.length === 0 && (
               <tr>
-                <td colSpan="15">
+                <td colSpan="16">
                   <div className="empty-table-message">
                     No unit entries yet. Add a unit above to start building.
                   </div>
@@ -230,4 +236,3 @@ export default function BuildUnitsTab({
     </section>
   );
 }
-

@@ -32,7 +32,7 @@ export default function JewelsTab({ jewels, updateJewel, addNormalJewel, removeN
   const { calculator } = useCalculatorConfig();
   const { legendaryJewels, normalJewels } = useMemo(() => splitJewelsByType(jewels), [jewels]);
   return <section className="tab-panel-card jewels-tab-layout">
-    <div className="section-heading-row card"><div><h3>Jewels</h3><p>Configure jewels and equip them on individual build entries. AD, AS, FD and acceleration apply to ordinary attacks. Special effects remain pending.</p></div></div>
+    <div className="section-heading-row card"><div><h3>Jewels</h3><p>Configure jewels and equip them on individual build entries. AD, AS, FD and acceleration apply to supported unit calculations. CDR and SD remain stored separately.</p></div></div>
     {[["Legendary Jewels", legendaryJewels], ["Square Jewels", normalJewels]].map(([label, entries]) => <div className="jewels-section" key={label}>
       <div className="jewels-section-header"><h4>{label}</h4></div>
       <div className="jewels-grid-layout">{entries.map(jewel => <JewelCard key={jewel.entryId} jewel={jewel} config={calculator} onFieldChange={updateJewel} onRemove={removeNormalJewel} />)}
@@ -41,4 +41,3 @@ export default function JewelsTab({ jewels, updateJewel, addNormalJewel, removeN
     </div>)}
   </section>;
 }
-

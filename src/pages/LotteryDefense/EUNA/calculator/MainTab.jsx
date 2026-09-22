@@ -127,16 +127,19 @@ export default function MainTab({
           <div className="section-heading-row">
             <div>
               <h3>DPS Overview</h3>
-              <p>Ordinary attacks include unit and jewel modifiers. Special abilities, support uptime and final army totals are pending.</p>
+              <p>Primary DPS combines unit and multi-target damage with the 85% attack-uptime estimate. Spell-inclusive DPS adds Void Thrasher spell damage.</p>
             </div>
           </div>
 
           {army.incomplete && <p role="status">This subtotal excludes entries with pending or unavailable damage.</p>}
+          {army.reason && <p role="status">{army.reason}</p>}
+          {buffs?.selectUpgradeEnabled && <p role="status">Select Upgrade+ is enabled, but its unknown effect is excluded from these results.</p>}
+          {additionalRune?.enabled && additionalRune.method && additionalRune.method !== 'manual' && <p role="status">The selected Additional Rune method is awaiting a formula and contributes no stats.</p>}
           {scenario.status !== 'supported' && <p role="status">{scenario.reason}</p>}
           {scenario.mode === 'ToC' && <p>ToC uses floor {scenario.enemy.round}, torment {scenario.torment.label}, and 2.5% damage inflicted. Classic difficulty and torment selections are inactive.</p>}
           <div className="overview-stats-grid">
             <StatTile
-              label="Ordinary DPS subtotal"
+              label="Unit DPS subtotal"
               value={scenario.status === 'supported' ? formatNumber(army.ordinaryDps) : 'Unavailable'}
               accent="blue"
             />
@@ -146,10 +149,15 @@ export default function MainTab({
               accent="gold"
             />
             <StatTile
-              label="Clear %"
-              value="Pending"
+              label="Primary coverage %"
+              value={formatNumber(army.primaryCoverage)}
               accent="purple"
             />
+            <StatTile label="Multi-target DPS" value={formatNumber(army.multiTargetDps)} accent="blue" />
+            <StatTile label="Primary DPS" value={formatNumber(army.primaryDps)} accent="blue" />
+            <StatTile label="Thrasher spell DPS" value={formatNumber(army.thrasherDps)} accent="purple" />
+            <StatTile label="Spell-inclusive DPS" value={formatNumber(army.spellInclusiveDps)} accent="blue" />
+            <StatTile label="Spell-inclusive coverage %" value={formatNumber(army.spellCoverage)} accent="purple" />
             <StatTile label="Unique unit types" value={army.uniqueUnits} accent="green" />
             <StatTile
               label="Total Units"
@@ -157,6 +165,12 @@ export default function MainTab({
               accent="green"
             />
           </div>
+          {army.supports && <details><summary>Support and spell details</summary>
+            <p>Support mana/s: {formatNumber(army.supports.ordinaryMana)}; Artifact/spell mana/s: {formatNumber(army.supports.artifactMana)}; God of Time interval factor: {army.supports.godOfTimeFactor.toFixed(4)}.</p>
+            <p>Average mob life: {formatNumber(army.supports.exposure.averageMobLife)} s; combined enemy damage factor: {scenario.combinedDebuffFactor.toFixed(4)}.</p>
+            {Object.entries(army.supports.coverage).map(([name, effect]) => <p key={name}>{name}: {formatNumber(effect.uptime * 100)}% coverage, ×{effect.factor.toFixed(4)}.</p>)}
+            <p>Purifier: replacement formula pending.</p>
+          </details>}
         </section>
 
         <section className="card unit-summary-card">
@@ -177,7 +191,7 @@ export default function MainTab({
                   <th>Unit</th>
                   <th>Total Count</th>
                   <th>Variants</th>
-                  <th>Ordinary DPS</th>
+                  <th>Unit DPS</th>
                 </tr>
               </thead>
 
@@ -213,4 +227,3 @@ export default function MainTab({
     </div>
   );
 }
-

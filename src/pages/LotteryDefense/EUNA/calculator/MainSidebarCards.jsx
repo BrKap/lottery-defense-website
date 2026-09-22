@@ -1,4 +1,5 @@
 import React from 'react';
+import { SUPPORT_OPTIONS } from '../../../../core/calculator/supportCalculation';
 import { useCalculatorConfig } from '../../../../core/calculator/CalculatorConfigContext';
 import { InfoRow, MiniStat } from '../../../../components/common/Stats';
 import { canUseBless, getSuperBuffGem, getRuneAffixOptions } from '../../../../core/calculator/buffOptions';
@@ -343,6 +344,7 @@ export function BuffPreviewCard({ buffs = {}, tocMode = false, title, sandbox = 
         <InfoRow label="Sandbox" value={sandbox.enabled ? 'On' : 'Off'} />
         <InfoRow label="Additional Rune" value={additionalRune.enabled ? (additionalRune.method === 'manual' || !additionalRune.method ? 'Manual' : 'Automatic (pending)') : 'Off'} />
         <InfoRow label="Purifier" value={buffs.purifierEnabled ? 'Pending' : 'Off'} />
+        {SUPPORT_OPTIONS.map(([key, label]) => <InfoRow key={key} label={label} value={buffs.supports?.[key] ?? 0} />)}
       </div>
     </section>
   );
