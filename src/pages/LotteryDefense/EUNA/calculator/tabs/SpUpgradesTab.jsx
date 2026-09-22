@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { formatCombatNumber } from '../../../../../core/calculator/calculatorHelpers';
 import { useCalculatorConfig } from '../../../../../core/calculator/CalculatorConfigContext';
 import {
   calculateUpgradeTotals,
@@ -12,6 +13,9 @@ export default function SpUpgradesTab({
   setActiveGroupId,
   investments,
   setInvestments,
+  resources,
+  resourceSettings,
+  setResourceSettings,
 }) {
   const { calculator } = useCalculatorConfig();
   const { UPGRADE_GROUPS } = calculator;
@@ -20,7 +24,7 @@ export default function SpUpgradesTab({
 
   const totals = useMemo(() => {
     return calculateUpgradeTotals(investments, UPGRADE_GROUPS);
-  }, [investments]);
+  }, [investments, UPGRADE_GROUPS]);
 
   function updateInvestment(groupId, upgradeId, nextValue) {
     setInvestments((current) => {
@@ -76,7 +80,7 @@ export default function SpUpgradesTab({
         <div className="section-heading-row sp-upgrade-header">
           <div>
             <h3>{activeGroup.label} Upgrades</h3>
-            <p>Track invested levels and costs before wiring full stat calculations.</p>
+            <p>Track invested levels, costs and remaining resources.</p>
           </div>
 
           <div className="sp-upgrade-totals">
@@ -98,6 +102,25 @@ export default function SpUpgradesTab({
             </div>
           </div>
         </div>
+
+        {resources && <section aria-label="Resource budget">
+          <h4>Resource budget</h4>
+          {Object.entries({ includeInfinite: 'Include Infinite costs in budget', gpEstimatesEnabled: 'Apply GP stat estimates' }).map(([key, label]) => <label key={key} style={{ display: 'block' }}>
+            <input type="checkbox" checked={resourceSettings[key]} onChange={event => setResourceSettings(current => ({ ...current, [key]: event.target.checked }))} /> {label}
+          </label>)}
+          <p>Budget options do not remove paid upgrade stats. GP estimates add a separate approximate contribution with a 25% margin.</p>
+          <p>SP Bank pays 1,000 SP per invested level at every multiple of 10 rounds, including the target round when applicable.{resources.bankPayouts !== null && ` ${resources.bankPayouts} payouts at this target.`}</p>
+          <dl>
+            {Object.entries({ 'Starting SP': resources.startingSp, 'Known budget SP expense': resources.knownBudgetSp,
+              'Remaining SP at start': resources.remainingStart, 'SP Bank return': resources.bankReturn,
+              'Bank return minus purchase cost': resources.bankNet, 'Remaining SP at target': resources.remainingTarget,
+              'EP expense': resources.totalEpOverall, 'XP estimate for EP expense': resources.epXpEstimate,
+            }).map(([label, value]) => <React.Fragment key={label}><dt>{label}</dt><dd>{value === null ? 'Unavailable' : formatCombatNumber(value)}</dd></React.Fragment>)}
+          </dl>
+          {resources.unknown.length > 0 && <p role="status">Remaining SP is unavailable because selected investments have unknown prices: {resources.unknown.map(u => u.name).join(', ')}.</p>}
+          <p>Bank and GP estimates use {resources.round} as the target {resources.gp.supported ? 'round or ToC floor' : 'selection'}. EP stays separate from SP; the XP estimate does not spend your entered XP.</p>
+          {resourceSettings.gpEstimatesEnabled && (resources.gp.supported ? <p>Estimated levels per AD/AS/CD category: {formatCombatNumber(resources.gp.levels)}. Applied AD: {formatCombatNumber(resources.gp.stats.attackDamage)}; AS: {formatCombatNumber(resources.gp.stats.attackSpeed)}; CD: {formatCombatNumber(resources.gp.stats.critDamage)}.</p> : <p role="status">GP estimates are unavailable for this mode.</p>)}
+        </section>}
 
         <div className="sp-upgrade-table-wrapper">
           {totals.unknownCostUpgrades.length > 0 && <p role="status">Totals include known costs only. Prices are unavailable for: {totals.unknownCostUpgrades.map(u => u.name).join(', ')}.</p>}
@@ -123,6 +146,7 @@ export default function SpUpgradesTab({
                     <td>
                       <input
                         type="number"
+                        aria-label={`${activeGroup.label} ${upgrade.name} invested levels`}
                         min="0"
                         max={upgrade.maxInvestments}
                         value={investedCount}
@@ -138,7 +162,7 @@ export default function SpUpgradesTab({
                     </td>
                     <td>{upgrade.maxInvestments}</td>
                     <td>{upgrade.name}</td>
-                    <td>{nextPrice ?? 'Unknown'}</td>
+                    <td>{investedCount >= upgrade.maxInvestments ? 'Maxed' : nextPrice ?? 'Unknown'}</td>
                     <td>{totalPrice ?? 'Unknown'}</td>
                   </tr>
                 );

@@ -1,7 +1,7 @@
 function clampLevel(level, maxInvestments) {
   const numericLevel = Number(level);
 
-  if (Number.isNaN(numericLevel)) {
+  if (!Number.isFinite(numericLevel)) {
     return 0;
   }
 
@@ -69,7 +69,15 @@ export function getNextUpgradePrice(upgrade, investedCount) {
     return 0;
   }
 
-  return getUpgradeCostForLevel(upgrade, clampedLevel);
+  return getIncrementalUpgradePrice(upgrade, clampedLevel, 1);
+}
+
+export function getIncrementalUpgradePrice(upgrade, investedCount, increment) {
+  const start = clampLevel(investedCount, upgrade.maxInvestments);
+  const end = clampLevel(start + Math.max(0, Math.floor(Number(increment) || 0)), upgrade.maxInvestments);
+  if (end === start) return 0;
+  const before = getTotalUpgradePrice(upgrade, start), after = getTotalUpgradePrice(upgrade, end);
+  return before === null || after === null ? null : after - before;
 }
 
 export function getTotalUpgradePrice(upgrade, investedCount) {

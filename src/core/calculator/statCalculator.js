@@ -2,6 +2,7 @@ import { DERIVED_STAT_KEYS, STAT_KEYS } from './statKeys';
 import { getUpgradeValue } from './spUpgradeHelpers';
 import { ADDITIONAL_RUNE_STAT_KEYS, canUseBless } from './buffOptions';
 import { calculateCriticalExpectation } from './criticalCalculation';
+import { calculateGpEstimate } from './resourceCalculation';
 
 // Preserve empirical coefficients and operation order. Do not quantize every
 // operation: verified fixed-point boundaries are not yet known. See
@@ -723,6 +724,7 @@ export function calculateProfileStats({
   tormentState = null,
   buffState = null,
   calculatorSettings = {},
+  resourceSettings = {},
   units = [],
   sandboxState = {},
   additionalRuneState = {},
@@ -744,6 +746,7 @@ export function calculateProfileStats({
     torment: tormentSource,
     buffs: buffSource,
     progression: calculateProgressionSourceStats(calculatorSettings),
+    gpEstimate: calculateManualSourceStats({ enabled: true, stats: calculateGpEstimate(calculatorSettings, resourceSettings).stats }, 'gpEstimate'),
     sandbox: calculateManualSourceStats(sandboxState, 'sandbox'),
     additionalRune: calculateAdditionalRuneSourceStats(additionalRuneState, ownedRuneLoadouts, additionalRuneMethods),
   };

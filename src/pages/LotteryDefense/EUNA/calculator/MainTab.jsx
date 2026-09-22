@@ -11,6 +11,7 @@ import {
 } from './MainSidebarCards';
 
 export default function MainTab({
+  ingredients,
   calculatorSettings,
   derivedStats,
   units,
@@ -222,7 +223,7 @@ export default function MainTab({
 
       <aside className="calculator-sidebar right-sidebar">
         <CreepStatsCard scenario={scenario} />
-        <UnitRecipeCostCard />
+        <UnitRecipeCostCard result={ingredients} />
       </aside>
     </div>
   );

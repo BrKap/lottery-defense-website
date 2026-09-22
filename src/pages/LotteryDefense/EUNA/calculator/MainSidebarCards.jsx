@@ -385,7 +385,7 @@ export function CreepStatsCard({ scenario }) {
   );
 }
 
-export function UnitRecipeCostCard() {
+export function UnitRecipeCostCard({ result }) {
   const recipeGroups = [
     {
       id: 'terran-bio',
@@ -431,11 +431,11 @@ export function UnitRecipeCostCard() {
 
   return (
     <section className="card sidebar-card">
-      <h3>Unit Recipe Cost</h3>
+      <h3>Unit Recipe Cost</h3><p>Ingredient counts, not mineral or gas prices.</p>{result?.incomplete && <p role="status">Incomplete: recipes unavailable for {result.missing.map(item => item.name).join(', ')}.</p>}
 
       <div className="recipe-total-row">
-        <span>Total Unit Cost</span>
-        <strong>0</strong>
+        <span>Known ingredient total</span>
+        <strong>{result?.total ?? 0}</strong>
       </div>
 
       <div className="recipe-groups">
@@ -444,7 +444,7 @@ export function UnitRecipeCostCard() {
             {group.rows.map((row) => (
               <div key={row.label} className="recipe-row">
                 <span className={`recipe-label ${row.tone}`}>{row.label}</span>
-                <strong>{row.value}</strong>
+                <strong>{result?.ingredients[row.label.toLowerCase()] ?? 0}</strong>
               </div>
             ))}
           </div>

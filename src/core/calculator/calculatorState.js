@@ -30,7 +30,7 @@ export function createDefaultCalculatorState(config) {
       powerBanker: false, powerBankerPlus: false, superBuff: false, superBuffPlus: false, purifierEnabled: false,
       supports: { corruption: 0, godOfTime: 0, stukov: 0, warfield: 0, talTempest: 0, tassadar: 0, vessel: 0 } },
     sandboxState: { enabled: false, stats: { ...zeroStats } }, additionalRuneState: { enabled: false, method: 'manual', stats: { ...zeroStats } },
-    resourceSettings: { includeInfinite: true, gpEstimatesEnabled: false, bankEnabled: false },
+    resourceSettings: { includeInfinite: true, gpEstimatesEnabled: false },
     recovered: [], migrationNotes: [],
   };
 }
@@ -85,6 +85,7 @@ export function normalizeCalculatorState(saved, config) {
     if (!allowed.includes(settings[key])) notes.push(`Saved ${key} (${settings[key]}) has no supported option. Choose a supported value.`);
   }
   for (const key of ['buffState','sandboxState','additionalRuneState','resourceSettings']) state[key] = merge(defaults[key], saved[key], key);
+  delete state.resourceSettings.bankEnabled; // Purchased bank levels always generate their returns.
   state.buffState.teamBuffCount = finite(state.buffState.teamBuffCount, 0, 'buffState.teamBuffCount', 0, 2, true);
   state.buffState.bless = finite(state.buffState.bless, 1, 'buffState.bless', 1, 3, true);
   for (const key of Object.keys(defaults.buffState.supports)) state.buffState.supports[key] = finite(state.buffState.supports[key], 0, `buffState.supports.${key}`, 0, 999, true);

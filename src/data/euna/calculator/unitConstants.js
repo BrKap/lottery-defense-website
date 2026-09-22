@@ -1,7 +1,7 @@
 import catalog from './unitCatalog.json';
 import recipes from './unitRecipes.json';
 
-export const DATA_REVISION = 'euna-2026-09-19.2';
+export const DATA_REVISION = 'euna-2026-09-21.1';
 export const UNIT_LIBRARY = catalog.map(unit => ({ ...unit, attackSpeed: unit.baseInterval }));
 export const UNIT_RECIPES = Object.fromEntries(recipes.map(recipe => [recipe.unitId, recipe]));
 export const INGREDIENT_ALIASES = { Spart: 'goliath', Goliath: 'goliath' };

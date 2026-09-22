@@ -1,0 +1,615 @@
+[
+  {
+    "name": "Atk Dmg I",
+    "price": {
+      "first": 50.0,
+      "step": 40.0
+    },
+    "max": 5
+  },
+  {
+    "name": "Atk Spd I",
+    "price": {
+      "first": 50.0,
+      "step": 40.0
+    },
+    "max": 5
+  },
+  {
+    "name": "Skl Dmg",
+    "price": {
+      "first": 50.0,
+      "step": 40.0
+    },
+    "max": 5
+  },
+  {
+    "name": "Crit Chance I",
+    "price": {
+      "first": 100.0,
+      "step": 75.0
+    },
+    "max": 10
+  },
+  {
+    "name": "Mvmt Spd",
+    "price": {
+      "first": 150.0,
+      "step": 75.0
+    },
+    "max": 3
+  },
+  {
+    "name": "Atk Range",
+    "price": {
+      "first": 100.0,
+      "step": 75.0
+    },
+    "max": 5
+  },
+  {
+    "name": "Mineral +",
+    "price": {
+      "first": 150.0,
+      "step": 75.0
+    },
+    "max": 4
+  },
+  {
+    "name": "Gas +",
+    "price": {
+      "first": 75.0,
+      "step": 75.0
+    },
+    "max": 8
+  },
+  {
+    "name": "Atk Dmg II",
+    "price": {
+      "first": 100.0,
+      "step": 70.0
+    },
+    "max": 15
+  },
+  {
+    "name": "Atk Spd II",
+    "price": {
+      "first": 100.0,
+      "step": 70.0
+    },
+    "max": 15
+  },
+  {
+    "name": "Skl Dmg II",
+    "price": {
+      "first": 100.0,
+      "step": 70.0
+    },
+    "max": 15
+  },
+  {
+    "name": "Gas Rev",
+    "price": {
+      "first": 350.0,
+      "step": 175.0
+    },
+    "max": 4
+  },
+  {
+    "name": "Unit XP+",
+    "price": {
+      "first": 200.0,
+      "step": 100.0
+    },
+    "max": 10
+  },
+  {
+    "name": "Interest Rate",
+    "price": {
+      "first": 200.0,
+      "step": 100.0
+    },
+    "max": 10
+  },
+  {
+    "name": "Max Upg",
+    "price": {
+      "first": 350.0,
+      "step": 300.0
+    },
+    "max": 10
+  },
+  {
+    "name": "Sell Lotto",
+    "price": {
+      "first": 150.0,
+      "step": 75.0
+    },
+    "max": 15
+  },
+  {
+    "name": "Atk Dmg III",
+    "price": {
+      "first": 150.0,
+      "step": 75.0
+    },
+    "max": 150
+  },
+  {
+    "name": "Atk Spd III",
+    "price": {
+      "first": 150.0,
+      "step": 75.0
+    },
+    "max": 150
+  },
+  {
+    "name": "Skl Dmg III",
+    "price": {
+      "first": 150.0,
+      "step": 75.0
+    },
+    "max": 150
+  },
+  {
+    "name": "Basic Rank",
+    "price": {
+      "first": 300.0,
+      "step": 300.0
+    },
+    "max": 4
+  },
+  {
+    "name": "Upg Rev I+",
+    "price": {
+      "first": 300.0,
+      "step": 350.0
+    },
+    "max": 5
+  },
+  {
+    "name": "Upg Rev ll+",
+    "price": {
+      "first": 700.0,
+      "step": 550.0
+    },
+    "max": 3
+  },
+  {
+    "name": "Rank Rev",
+    "price": {
+      "first": 350.0,
+      "step": 350.0
+    },
+    "max": 5
+  },
+  {
+    "name": "Card Rev",
+    "price": {
+      "first": 350.0,
+      "step": 350.0
+    },
+    "max": 5
+  },
+  {
+    "name": "Crit Chance II",
+    "price": {
+      "first": 200.0,
+      "step": 75.0
+    },
+    "max": 150
+  },
+  {
+    "name": "Mvmt Spd II",
+    "price": {
+      "first": 400.0,
+      "step": 150.0
+    },
+    "max": 3
+  },
+  {
+    "name": "Crit Dmg I",
+    "price": {
+      "first": 200.0,
+      "step": 90.0
+    },
+    "max": 125
+  },
+  {
+    "name": "Multi Crit I",
+    "price": null,
+    "max": 25
+  },
+  {
+    "name": "Unit Lottery Lotto",
+    "price": {
+      "first": 100.0,
+      "step": 40.0
+    },
+    "max": 70
+  },
+  {
+    "name": "Gas Lottery Lotto",
+    "price": {
+      "first": 100.0,
+      "step": 40.0
+    },
+    "max": 70
+  },
+  {
+    "name": "Bank Lotto",
+    "price": {
+      "first": 100.0,
+      "step": 75.0
+    },
+    "max": 70
+  },
+  {
+    "name": "Horse XP",
+    "price": {
+      "first": 200.0,
+      "step": 100.0
+    },
+    "max": 20
+  },
+  {
+    "name": "Atk Range II",
+    "price": {
+      "first": 2000.0,
+      "step": 100.0
+    },
+    "max": 1
+  },
+  {
+    "name": "Armor Reduct",
+    "price": {
+      "first": 400.0,
+      "step": 100.0
+    },
+    "max": 1
+  },
+  {
+    "name": "Lottery Rev",
+    "price": {
+      "first": 750.0,
+      "step": 350.0
+    },
+    "max": 15
+  },
+  {
+    "name": "Cooldown",
+    "price": {
+      "first": 400.0,
+      "step": 200.0
+    },
+    "max": 20
+  },
+  {
+    "name": "Mineral Lotto",
+    "price": {
+      "first": 200.0,
+      "step": 75.0
+    },
+    "max": 120
+  },
+  {
+    "name": "Gas Lotto",
+    "price": {
+      "first": 200.0,
+      "step": 75.0
+    },
+    "max": 120
+  },
+  {
+    "name": "XP Limit",
+    "price": {
+      "first": 350.0,
+      "step": 350.0
+    },
+    "max": 30
+  },
+  {
+    "name": "XP Lotto",
+    "price": {
+      "first": 200.0,
+      "step": 100.0
+    },
+    "max": 50
+  },
+  {
+    "name": "Team Atk Dmg",
+    "price": {
+      "first": 700.0,
+      "step": 150.0
+    },
+    "max": 27
+  },
+  {
+    "name": "Team Atk Spd",
+    "price": {
+      "first": 700.0,
+      "step": 150.0
+    },
+    "max": 27
+  },
+  {
+    "name": "Team Crit Chance",
+    "price": {
+      "first": 700.0,
+      "step": 150.0
+    },
+    "max": 27
+  },
+  {
+    "name": "Team Exchange",
+    "price": {
+      "first": 700.0,
+      "step": 150.0
+    },
+    "max": 20
+  },
+  {
+    "name": "Max Energy",
+    "price": {
+      "first": 150.0,
+      "step": 75.0
+    },
+    "max": 50
+  },
+  {
+    "name": "SP Bank",
+    "price": {
+      "first": 10000.0,
+      "step": 50.0
+    },
+    "max": 250
+  },
+  {
+    "name": "Kill Energy",
+    "price": {
+      "first": 200.0,
+      "step": 100.0
+    },
+    "max": 50
+  },
+  {
+    "name": "Kill Exp",
+    "price": {
+      "first": 200.0,
+      "step": 100.0
+    },
+    "max": 100
+  },
+  {
+    "name": "Final Dmg",
+    "price": {
+      "first": 1500.0,
+      "step": 750.0
+    },
+    "max": 100
+  },
+  {
+    "name": "Atk Dmg IV",
+    "price": {
+      "first": 750.0,
+      "step": 350.0
+    },
+    "max": 200
+  },
+  {
+    "name": "Atk Spd IV",
+    "price": {
+      "first": 750.0,
+      "step": 350.0
+    },
+    "max": 200
+  },
+  {
+    "name": "Crit Chance III",
+    "price": null,
+    "max": 250
+  },
+  {
+    "name": "Dbl Upg",
+    "price": {
+      "first": 400.0,
+      "step": 400.0
+    },
+    "max": 50
+  },
+  {
+    "name": "Rank Rev II",
+    "price": {
+      "first": 4000.0,
+      "step": 4000.0
+    },
+    "max": 5
+  },
+  {
+    "name": "SXD Rev",
+    "price": {
+      "first": 2000.0,
+      "step": 2000.0
+    },
+    "max": 10
+  },
+  {
+    "name": "Accel",
+    "price": {
+      "first": 1300.0,
+      "step": 750.0
+    },
+    "max": 150
+  },
+  {
+    "name": "MT Dmg",
+    "price": {
+      "first": 600.0,
+      "step": 300.0
+    },
+    "max": 150
+  },
+  {
+    "name": "MT Chance",
+    "price": {
+      "first": 800.0,
+      "step": 400.0
+    },
+    "max": 150
+  },
+  {
+    "name": "MT Multi Crit",
+    "price": {
+      "first": 1200.0,
+      "step": 600.0
+    },
+    "max": 200
+  },
+  {
+    "name": "Crit Dmg II",
+    "price": {
+      "first": 1200.0,
+      "step": 600.0
+    },
+    "max": 200
+  },
+  {
+    "name": "Multi Crit II",
+    "price": null,
+    "max": 15
+  },
+  {
+    "name": "Rune Upg",
+    "price": {
+      "first": 2500.0,
+      "step": 2500.0
+    },
+    "max": 20
+  },
+  {
+    "name": "XP Limit II",
+    "price": {
+      "first": 25000.0,
+      "step": 25000.0
+    },
+    "max": 5
+  },
+  {
+    "name": "Kill XP II",
+    "price": {
+      "first": 900.0,
+      "step": 450.0
+    },
+    "max": 100
+  },
+  {
+    "name": "Atk Dmg (E)",
+    "price": {
+      "first": 1.0,
+      "step": 1.0
+    },
+    "max": 99
+  },
+  {
+    "name": "Atk Spd  (E)",
+    "price": {
+      "first": 1.0,
+      "step": 1.0
+    },
+    "max": 14
+  },
+  {
+    "name": "Crit Chance (E)",
+    "price": {
+      "first": 1.0,
+      "step": 1.0
+    },
+    "max": 12
+  },
+  {
+    "name": "Crit Dmg (E)",
+    "price": {
+      "first": 1.0,
+      "step": 1.0
+    },
+    "max": 12
+  },
+  {
+    "name": "Multi Crit (E)",
+    "price": null,
+    "max": 2
+  },
+  {
+    "name": "Reduce Armor",
+    "price": null,
+    "max": 1
+  },
+  {
+    "name": "Mineral+",
+    "price": {
+      "first": 1.0,
+      "step": 1.0
+    },
+    "max": 10
+  },
+  {
+    "name": "Break Safety",
+    "price": null,
+    "max": 1
+  },
+  {
+    "name": "Atk Dmg (Inf)",
+    "price": {
+      "first": 200.0,
+      "step": 600.0
+    },
+    "max": 500
+  },
+  {
+    "name": "Atk Spd (Inf)",
+    "price": {
+      "first": 200.0,
+      "step": 600.0
+    },
+    "max": 500
+  },
+  {
+    "name": "Crit Dmg (Inf)",
+    "price": {
+      "first": 200.0,
+      "step": 600.0
+    },
+    "max": 500
+  },
+  {
+    "name": "Accel (Inf)",
+    "price": {
+      "first": 200.0,
+      "step": 600.0
+    },
+    "max": 500
+  },
+  {
+    "name": "XP Lotto",
+    "price": null,
+    "max": 250
+  },
+  {
+    "name": "R.Stone Lotto",
+    "price": null,
+    "max": 250
+  },
+  {
+    "name": "R.Stone Rev",
+    "price": null,
+    "max": 250
+  },
+  {
+    "name": "Reduce Shield",
+    "price": {
+      "first": 400.0,
+      "step": 800.0
+    },
+    "max": 250
+  }
+]

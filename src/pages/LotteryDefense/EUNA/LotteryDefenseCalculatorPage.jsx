@@ -7,6 +7,7 @@ import {
 } from '../../../core/calculator/jewelHelpers';
 import { resolveScenario } from '../../../core/calculator/scenarioCalculator';
 import { calculateBattle } from '../../../core/calculator/battleCalculation';
+import { calculateResources, calculateIngredients } from '../../../core/calculator/resourceCalculation';
 import { loadCalculatorState, saveCalculatorState, hydrateUnits, appendBuildUnit, updateBuildUnit, updateRuneField } from '../../../core/calculator/calculatorState';
 import { calculateProfileStats } from '../../../core/calculator/statCalculator';
 import FloatingStatsPanel from './calculator/FloatingStatsPanel';
@@ -140,6 +141,7 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
       },
       buffState: state.buffState,
       calculatorSettings,
+      resourceSettings: state.resourceSettings,
       units,
       sandboxState: state.sandboxState,
       additionalRuneState: state.additionalRuneState,
@@ -153,11 +155,13 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
     calculatorSettings.difficulty,
     calculatorSettings.title,
     calculatorSettings.torment,
-    state.buffState, state.sandboxState, state.additionalRuneState, calculatorSettings, units, runeLoadouts, resolvedScenario,
+    state.buffState, state.sandboxState, state.additionalRuneState, state.resourceSettings, calculatorSettings, units, runeLoadouts, resolvedScenario,
   ]);
 
   const army = useMemo(() => calculateBattle({ units, profile: baseProfileSummary, settings: calculatorSettings, buffs: state.buffState, jewels, config: calculatorConfig }), [units, baseProfileSummary, calculatorSettings, state.buffState, jewels, calculatorConfig]);
   const { scenario, profile: profileSummary } = army;
+  const resources = calculateResources(calculatorSettings, state.resourceSettings, spInvestments, calculatorConfig.UPGRADE_GROUPS);
+  const ingredients = calculateIngredients(units, calculatorConfig.UNIT_RECIPES, state.buffState.supports);
   const derivedStats = { requiredDps: scenario.requiredDps, overallDps: null, completionPercent: null,
     totalUnits: units.reduce((sum, unit) => sum + unit.count, 0), uniqueUnits: new Set(units.map(u => u.unitId)).size };
   const profileStats = {
@@ -181,6 +185,7 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
 
       {activeTab === 'main' && (
         <MainTab
+          ingredients={ingredients}
           army={army}
           scenario={scenario}
           buffs={state.buffState}
@@ -202,6 +207,9 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
 
       {activeTab === 'sp-upgrades' && (
         <SpUpgradesTab
+          resources={resources}
+          resourceSettings={state.resourceSettings}
+          setResourceSettings={setField('resourceSettings')}
           activeGroupId={spActiveGroupId}
           setActiveGroupId={setSpActiveGroupId}
           investments={spInvestments}

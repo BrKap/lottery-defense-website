@@ -58,7 +58,7 @@ const createGroup = ({ id, label, currency = CURRENCY.SP, upgrades = [] }) => ({
   - Use costModel for the upgrade price.
   - Most upgrades can stay linear.
   - Special upgrades can use table or tiered-linear models.
-  - The numbers below are placeholder examples. Replace them with the real values.
+  - Known prices are per-purchase prices. Unverified prices are explicitly unavailable.
 */
 
 export const UPGRADE_GROUPS = [
@@ -476,7 +476,7 @@ export const UPGRADE_GROUPS = [
         maxInvestments: 200,
         valueModel: createLinearValueModel({ base: 0, perLevel: 1 }),
         costModel: createTieredLinearModel([
-          { start: 0, end: 150, base: 750, perLevel: 350 },
+          { start: 0, end: 149, base: 750, perLevel: 350 },
           { start: 150, end: 200, base: 53250, perLevel: 0 },
         ]),
       }),
@@ -486,7 +486,7 @@ export const UPGRADE_GROUPS = [
         maxInvestments: 200,
         valueModel: createLinearValueModel({ base: 0, perLevel: 0.5 }),
         costModel: createTieredLinearModel([
-          { start: 0, end: 150, base: 750, perLevel: 350 },
+          { start: 0, end: 149, base: 750, perLevel: 350 },
           { start: 150, end: 200, base: 53250, perLevel: 0 },
         ]),
       }),
@@ -496,7 +496,7 @@ export const UPGRADE_GROUPS = [
         maxInvestments: 250,
         valueModel: createLinearValueModel({ base: 0, perLevel: 0.5 }),
         costModel: createTieredLinearModel([
-          { start: 0, end: 150, base: 750, perLevel: 500 },
+          { start: 0, end: 149, base: 750, perLevel: 500 },
           { start: 150, end: 250, base: 75750, perLevel: 0 },
         ]),
       }),
