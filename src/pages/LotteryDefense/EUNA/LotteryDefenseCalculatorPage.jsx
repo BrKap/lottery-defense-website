@@ -20,7 +20,7 @@ import SpUpgradesTab from './calculator/tabs/SpUpgradesTab';
 import RunesTab from './calculator/tabs/RunesTab';
 import JewelsTab from './calculator/tabs/JewelsTab';
 import BuffsTab from './calculator/tabs/BuffsTab';
-import PresetsTab from './calculator/tabs/PresetsTab';
+import PresetToolbar from './calculator/PresetToolbar';
 import BuildUnitsTab from './calculator/tabs/BuildUnitsTab';
 
 export default function LotteryDefenseCalculatorPage({ versionConfig }) {
@@ -184,6 +184,12 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
         <button type="button" onClick={exportRecovery}>Download original saved data</button>
       </section>}
       <CalculatorHero settings={calculatorSettings} versionConfig={versionConfig} />
+      <PresetToolbar
+        state={state}
+        config={calculatorConfig}
+        blocked={loaded.blocked}
+        onAction={action => { if (!loaded.blocked) setState(current => changePreset(current, action, calculatorConfig)); }}
+      />
       <FloatingStatsPanel profileStats={profileStats} preferences={state.uiSettings} onPreferences={setField('uiSettings')} />
       <CalculatorTabs tabs={calculatorConfig.TAB_OPTIONS} activeTab={activeTab} onChange={setActiveTab} />
 
@@ -241,14 +247,6 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
         />
       )}
       {activeTab === 'buffs' && <BuffsTab title={calculatorSettings.title} buffs={state.buffState} setBuffs={setField('buffState')} sandbox={state.sandboxState} setSandbox={setField('sandboxState')} additionalRune={state.additionalRuneState} setAdditionalRune={setField('additionalRuneState')} />}
-      {activeTab === 'presets' && (
-        <PresetsTab
-          state={state}
-          config={calculatorConfig}
-          blocked={loaded.blocked}
-          onAction={action => { if (!loaded.blocked) setState(changePreset(state, action, calculatorConfig)); }}
-        />
-      )}
       {activeTab === 'build-units' && (
         <BuildUnitsTab
           results={army.entries}

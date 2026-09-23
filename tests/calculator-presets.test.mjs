@@ -38,6 +38,11 @@ test('Portable JSON presets and complete build persistence', async t => withCalc
     current=changePreset(current,{type:'undo-delete'},config); assert.equal(current.calculatorSettings.presetName,'Copy edited'); assert.equal(current.units[0].overmindStacks,2);
     assert.equal(rich.presetLibrary.items.length,0);
   });
+  await t.test('preset changes preserve the current calculator tab', () => {
+    const current = changePreset({...rich, activeTab:'build-units'}, {type:'new'}, config);
+    assert.equal(current.activeTab, 'build-units');
+    assert(!config.TAB_OPTIONS.some(tab => tab.id === 'presets'));
+  });
   await t.test('import creates a new preset without overwriting current build or nesting libraries', () => {
     const imported=changePreset(rich,{type:'import',raw:exportPreset(rich)},config);
     assert.equal(imported.presetLibrary.items.length,2);
@@ -64,10 +69,12 @@ test('Portable JSON presets and complete build persistence', async t => withCalc
     assert.deepEqual(normalized.uiSettings,saved.uiSettings);
     const next=changePreset(normalized,{type:'new'},config); assert.deepEqual(next.uiSettings,saved.uiSettings);
   });
-  await t.test('JSON file controls replace the scaffold and KR remains placeholder', async () => {
-    const {default:Presets}=await loadModule('/src/pages/LotteryDefense/EUNA/calculator/tabs/PresetsTab.jsx');
-    const html=renderToStaticMarkup(React.createElement(Presets,{state:rich,config,onAction:()=>{}}));
-    assert.match(html,/Download JSON/); assert.match(html,/type="file"/); assert.match(html,/\.json,application\/json/);
+  await t.test('global preset toolbar replaces the tab and KR remains placeholder', async () => {
+    const {default:PresetToolbar}=await loadModule('/src/pages/LotteryDefense/EUNA/calculator/PresetToolbar.jsx');
+    const html=renderToStaticMarkup(React.createElement(PresetToolbar,{state:rich,config,onAction:()=>{}}));
+    assert.match(html,/Download preset JSON/); assert.match(html,/Import preset JSON/);
+    assert.match(html,/New preset/); assert.match(html,/Duplicate preset/); assert.match(html,/Rename preset/);
+    assert.match(html,/Delete preset/); assert.match(html,/Selected preset/);
     assert.doesNotMatch(html,/scaffold|sheet|Export Code/);
     const {krVersionConfig}=await loadModule('/src/data/kr/index.js'); assert.equal(krVersionConfig.status,'placeholder');
   });

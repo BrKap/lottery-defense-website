@@ -62,5 +62,4 @@ export const TAB_OPTIONS = [
   { id: 'jewels', label: 'Jewels' },
   { id: 'buffs', label: 'Buffs' },
   { id: 'build-units', label: 'Build Units' },
-  { id: 'presets', label: 'Presets' },
 ];

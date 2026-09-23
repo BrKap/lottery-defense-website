@@ -17,10 +17,6 @@
   min-width: 220px;
 }
 
-.build-units-table {
-  min-width: 1380px;
-}
-
 .build-units-table td,
 .build-units-table th {
   white-space: nowrap;
@@ -30,16 +26,11 @@
   width: 240px;
 }
 
-.build-units-table .unit-name-cell details,
 .build-units-table .unit-name-cell small {
   display: block;
-  width: 230px;
+  width: 100%;
   white-space: normal;
   font-weight: normal;
-}
-
-.build-units-table summary {
-  cursor: pointer;
 }
 
 .build-units-table .unit-name-cell label {
@@ -75,27 +66,6 @@
   width: 160px;
 }
 
-.build-units-table .col-damage {
-  width: 120px;
-}
-
-
-.build-units-table .col-additional-damage {
-  width: 120px;
-}
-
-.build-units-table .col-speed {
-  width: 110px;
-}
-
-.build-units-table .col-speed_reduction {
-  width: 110px;
-}
-
-.build-units-table .col-hits {
-  width: 90px;
-}
-
 .build-units-table .col-dps {
   width: 130px;
 }
@@ -129,3 +99,42 @@
 .upgrade-group-card p {
   margin-bottom: 0;
 }
+
+/* Compact build editor and calculation popup */
+.build-units-table { width: 100%; min-width: 940px; }
+.build-units-table .col-unit { width: 190px; }
+.build-units-table .unit-name-cell { min-width: 150px; white-space: normal; }
+.build-units-table .col-count,
+.build-units-table .col-level,
+.build-units-table .col-lb { width: 65px; }
+.build-units-table .col-rank,
+.build-units-table .col-armor { width: 85px; }
+.build-units-table .col-jewel { width: 130px; }
+.build-units-table .col-dps,
+.build-units-table .col-full-dps { width: 105px; }
+.build-units-table .col-actions { width: 150px; }
+.build-units-table .col-overmind { width: 84px; }
+.build-units-table .col-actions { width: 100px; }
+.build-units-table .overmind-cell select { width: 64px; min-width: 64px; padding: .5rem .35rem; }
+.build-units-table .unit-name-and-info { display: flex; align-items: center; justify-content: space-between; gap: .4rem; }
+.build-units-table .unit-name-and-info span { min-width: 0; white-space: normal; }
+.unit-info-button {
+  flex: none; width: 24px; height: 24px; padding: 0; border-radius: 50%;
+  border: 1px solid var(--accent-color); background: transparent;
+  color: var(--accent-color); font: 700 .85rem/1 Arial, sans-serif; cursor: pointer;
+}
+.unit-info-button:hover, .unit-info-button:focus-visible { background: var(--panel-bg-active); outline: 2px solid var(--accent-color); outline-offset: 2px; }
+.build-units-table .table-input.input-xs { min-width: 54px; }
+.build-units-table .table-input.input-sm { min-width: 72px; }
+.build-units-table .table-input.input-md { min-width: 110px; }
+.build-units-table td:last-child button { margin: .15rem; }
+.calculation-modal-backdrop { position: fixed; inset: 0; z-index: 3000; display: grid; place-items: center; padding: 1rem; background: rgba(0, 0, 0, .78); }
+.calculation-modal { width: min(620px, 100%); max-height: min(85vh, 900px); overflow-y: auto; background: #202630; }
+.calculation-modal-heading { display: flex; justify-content: space-between; gap: 1rem; }
+.calculation-modal-heading p { margin-top: 0; }
+.calculation-modal-heading button { align-self: flex-start; font-size: 1.5rem; }
+.calculation-detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .6rem; }
+.calculation-detail-grid div { padding: .7rem; border: 1px solid var(--border-color-soft); border-radius: 10px; }
+.calculation-detail-grid dt { color: var(--text-muted, #aeb8c8); font-size: .85rem; }
+.calculation-detail-grid dd { margin: .3rem 0 0; font-weight: 700; }
+.calculation-detail-notes { border-top: 1px solid var(--border-color-soft); margin-top: 1rem; }

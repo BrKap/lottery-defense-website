@@ -26,9 +26,15 @@ test('Calculator controls and shared result rendering', async t => withCalculato
     const build = render(BuildUnitsTab, { jewels: saved.jewels, results: army.entries, units, selectedUnitId: 'amon', setSelectedUnitId: noop, addUnit: noop, removeUnit: noop, updateUnit: noop });
     const formatted = formatNumber(army.entries[0].fullDps);
     assert(main.includes(formatted)); assert(build.includes(formatted));
-    assert.equal((build.match(/<th(?: |>|\n)/g) ?? []).length, 16);
-    assert.equal((build.match(/<td(?: |>|\n)/g) ?? []).length, 16);
-    assert.match(build, /Calculation details/);
+    assert.equal((build.match(/<th(?: |>|\n)/g) ?? []).length, 11);
+    assert.equal((build.match(/<td(?: |>|\n)/g) ?? []).length, 11);
+    assert.match(build, /Unit DPS/);
+    assert.match(build, /Total DPS/);
+    assert.match(build, /Calculation details for Amon/);
+    assert.match(build, /<th class="col-actions">Remove<\/th>/);
+    assert.doesNotMatch(build, /<th class="col-actions">Details<\/th>|>View<\/button>/);
+    assert.match(build, /unit-name-and-info/);
+    assert.doesNotMatch(build, /<summary>Calculation details<\/summary>/);
     assert.doesNotMatch(main + build, /mock|spreadsheet|Calculate!/i);
   });
   await t.test('buff controls render the corrected choices and restricted stats', () => {

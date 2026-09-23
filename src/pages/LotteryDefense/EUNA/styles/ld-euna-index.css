@@ -7,6 +7,7 @@
 @import './tabs/layout.css';
 @import './tabs/main-tab.css';
 @import './tabs/build-units-tab.css';
+@import './tabs/preset-toolbar.css';
 @import './tabs/sp-upgrades-tab.css';
 @import './tabs/runes-tab.css';
 @import './tabs/jewels-tab.css';

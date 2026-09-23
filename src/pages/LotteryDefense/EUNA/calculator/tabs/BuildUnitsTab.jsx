@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useCalculatorConfig } from '../../../../../core/calculator/CalculatorConfigContext';
 import {
   formatCombatNumber as formatNumber,
@@ -19,6 +20,34 @@ export default function BuildUnitsTab({
 }) {
   const { calculator } = useCalculatorConfig();
   const { RANK_OPTIONS, unitLibrary } = calculator;
+  const [detailsEntryId, setDetailsEntryId] = useState(null);
+  const closeButtonRef = useRef(null);
+  const dialogRef = useRef(null);
+  const triggerRef = useRef(null);
+  const detailsUnit = units.find(unit => unit.entryId === detailsEntryId);
+  const detailsResult = results.find(result => result.entryId === detailsEntryId);
+  const details = detailsResult?.details;
+  const display = value => value == null ? 'Unavailable' : formatNumber(value);
+  const closeDetails = () => { setDetailsEntryId(null); requestAnimationFrame(() => triggerRef.current?.focus()); };
+
+  useEffect(() => {
+    if (detailsEntryId) closeButtonRef.current?.focus();
+  }, [detailsEntryId]);
+  useEffect(() => {
+    if (!detailsEntryId) return undefined;
+    const onKeyDown = event => {
+      if (event.key === 'Escape') closeDetails();
+      if (event.key === 'Tab') {
+        const controls = [...(dialogRef.current?.querySelectorAll('button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])') ?? [])];
+        if (!controls.length) return;
+        const first = controls[0], last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [detailsEntryId]);
 
   return (
     <section className="card tab-panel-card">
@@ -64,39 +93,27 @@ export default function BuildUnitsTab({
               <th className="col-level">Lvl</th>
               <th className="col-armor">Armor</th>
               <th className="col-lb">LB</th>
-              <th>Overmind AD stacks</th>
+              <th className="col-overmind">Overmind</th>
               <th className="col-jewel">Jewel</th>
-              <th className="col-damage">Hit Damage</th>
-              <th className="col-additional-damage">AD %</th>
-              <th className="col-speed">Base Weapon Speed</th>
-              <th className="col-speed_reduction">Interval (s)</th>
-              <th className="col-hits">Hits</th>
-              <th className="col-dps">DPS / Unit</th>
-              <th className="col-full-dps">Unit DPS</th>
-              <th className="col-actions"></th>
+              <th className="col-dps">Unit DPS</th>
+              <th className="col-full-dps">Total DPS</th>
+              <th className="col-actions">Remove</th>
             </tr>
           </thead>
 
           <tbody>
             {units.map((unit) => {
               const result = results.find(r => r.entryId === unit.entryId);
-              const d = result?.details;
-              const display = value => value == null ? 'Unavailable' : formatNumber(value);
-
               return (
                 <tr key={unit.entryId}>
-                  <td className="unit-name-cell">{unit.name}
+                  <td className="unit-name-cell">
+                    <div className="unit-name-and-info">
+                      <span>{unit.name}</span>
+                      <button className="unit-info-button" type="button" title={`Calculation details for ${unit.name}`} onClick={event => { triggerRef.current = event.currentTarget; setDetailsEntryId(unit.entryId); }} aria-label={`Calculation details for ${unit.name}`}>i</button>
+                    </div>
                     {unit.unitId === 'xelnaga-kerrigan' && <label><input type="checkbox" checked={unit.xnkFixedAttacks !== false} onChange={e => updateUnit(unit.entryId, 'xnkFixedAttacks', e.target.checked)} /> Fixed five attacks</label>}
                     {unit.unitId === 'overmind' && <label>FD buff mode<select value={unit.abilityMode === 'uptime' ? 'uptime' : 'default'} onChange={e => updateUnit(unit.entryId, 'abilityMode', e.target.value)}><option value="default">Full +5 FD</option><option value="uptime">Scale FD by uptime</option></select></label>}
                     {result?.reason && <small role="status">{result.reason}</small>}
-                    {d && <details><summary>Calculation details</summary>
-                      <p>Grade {d.grade}; base {formatNumber(d.gradedBase)}; effective rank {d.effectiveRank}{d.provisionalRank ? ' (provisional zero bonus)' : ''}.</p>
-                      <p>AD factor {d.adFactor.toFixed(4)}; FD factor {d.fdFactor.toFixed(4)}; count bonus {d.countBonus} AD.</p>
-                      <p>Crit factor {d.critical.multiplier.toFixed(4)}; average MC {d.critical.averageMC.toFixed(4)}; penetration factor {d.penetrationFactor.toFixed(4)}; damage adjustment {d.damageAdjustment}.</p>
-                      <p>Jewel: AD {d.jewelStats.attackDamage}, AS {d.jewelStats.attackSpeed}, FD {d.jewelStats.finalDamage}, acceleration {d.jewelStats.acceleration}%, CDR {d.jewelStats.cooldown}, SD {d.jewelStats.skillDamage}. CDR/SD are retained for supported special effects.</p>
-                      {d.overmindUptime !== undefined && <p>FD uptime: {(d.overmindUptime * 100).toFixed(2)}%. {d.uniqueContribution ? 'Selected unique contribution.' : 'Another Overmind supplies the unique contribution.'}</p>}
-                      {d.artifact && <p>Spell uptime: {(d.artifact.uptime * 100).toFixed(2)}%; ticks: {formatNumber(d.artifact.ticks)}.</p>}
-                    </details>}
                   </td>
 
                   <td>
@@ -167,7 +184,7 @@ export default function BuildUnitsTab({
                     />
                   </td>
 
-                  <td><select aria-label={`${unit.name} Overmind AD stacks`} value={unit.overmindStacks ?? 0} onChange={e => updateUnit(unit.entryId, 'overmindStacks', Number(e.target.value))}>{[0,1,2,3,4,5].map(n => <option key={n}>{n}</option>)}</select></td>
+                  <td className="overmind-cell"><select aria-label={`${unit.name} Overmind AD stacks`} value={unit.overmindStacks ?? 0} onChange={e => updateUnit(unit.entryId, 'overmindStacks', Number(e.target.value))}>{[0,1,2,3,4,5].map(n => <option key={n}>{n}</option>)}</select></td>
                   <td>
                     <select
                       className="table-input input-md"
@@ -182,22 +199,6 @@ export default function BuildUnitsTab({
                         </option>
                       ))}
                     </select>
-                  </td>
-
-                  <td className="static-cell">
-                    {display(d?.hitDamage)}
-                  </td>
-
-                  <td className="static-cell">
-                    {display(d?.effectiveAD)}
-                  </td>
-
-                  <td className="static-cell">
-                    {unit.unitId === 'artifact' ? '—' : display(d?.baseInterval)}
-                  </td>
-                  <td className="static-cell">{unit.unitId === 'artifact' ? 'Spell' : d ? d.interval.toFixed(4) : '—'}</td>
-                  <td className="static-cell">
-                    {unit.unitId === 'artifact' ? 'Ticks' : display(d?.attacks)}
                   </td>
 
                   <td className="static-cell">
@@ -223,7 +224,7 @@ export default function BuildUnitsTab({
 
             {units.length === 0 && (
               <tr>
-                <td colSpan="16">
+                <td colSpan="11">
                   <div className="empty-table-message">
                     No unit entries yet. Add a unit above to start building.
                   </div>
@@ -233,6 +234,33 @@ export default function BuildUnitsTab({
           </tbody>
         </table>
       </div>
+      {detailsUnit && createPortal(<div className="calculation-modal-backdrop" onMouseDown={event => { if (event.target === event.currentTarget) closeDetails(); }}>
+        <section ref={dialogRef} className="calculation-modal card" role="dialog" aria-modal="true" aria-labelledby="calculation-modal-title">
+          <div className="calculation-modal-heading">
+            <div><h3 id="calculation-modal-title">{detailsUnit.name} calculation details</h3><p>{detailsResult?.reason || 'DPS breakdown for this build entry.'}</p></div>
+            <button ref={closeButtonRef} type="button" onClick={closeDetails} aria-label="Close calculation details">×</button>
+          </div>
+          {details ? <>
+            <dl className="calculation-detail-grid">
+              <div><dt>Unit DPS</dt><dd>{display(detailsResult?.perUnitDps)}</dd></div>
+              <div><dt>Total DPS</dt><dd>{display(detailsResult?.fullDps)}</dd></div>
+              <div><dt>Hit Damage</dt><dd>{display(details.hitDamage)}</dd></div>
+              <div><dt>AD %</dt><dd>{display(details.effectiveAD)}</dd></div>
+              <div><dt>Base Weapon Speed</dt><dd>{detailsUnit.unitId === 'artifact' ? '—' : display(details.baseInterval)}</dd></div>
+              <div><dt>Interval (s)</dt><dd>{detailsUnit.unitId === 'artifact' ? 'Spell' : details.interval.toFixed(4)}</dd></div>
+              <div><dt>{detailsUnit.unitId === 'artifact' ? 'Ticks' : 'Hits'}</dt><dd>{display(details.attacks)}</dd></div>
+            </dl>
+            <div className="calculation-detail-notes">
+              <p>Grade {details.grade}; base {formatNumber(details.gradedBase)}; effective rank {details.effectiveRank}{details.provisionalRank ? ' (provisional zero bonus)' : ''}.</p>
+              <p>AD factor {details.adFactor.toFixed(4)}; FD factor {details.fdFactor.toFixed(4)}; count bonus {details.countBonus} AD.</p>
+              <p>Crit factor {details.critical.multiplier.toFixed(4)}; average MC {details.critical.averageMC.toFixed(4)}; penetration factor {details.penetrationFactor.toFixed(4)}; damage adjustment {details.damageAdjustment}.</p>
+              <p>Jewel: AD {details.jewelStats.attackDamage}, AS {details.jewelStats.attackSpeed}, FD {details.jewelStats.finalDamage}, acceleration {details.jewelStats.acceleration}%, CDR {details.jewelStats.cooldown}, SD {details.jewelStats.skillDamage}. CDR/SD are retained for supported special effects.</p>
+              {details.overmindUptime !== undefined && <p>FD uptime: {(details.overmindUptime * 100).toFixed(2)}%. {details.uniqueContribution ? 'Selected unique contribution.' : 'Another Overmind supplies the unique contribution.'}</p>}
+              {details.artifact && <p>Spell uptime: {(details.artifact.uptime * 100).toFixed(2)}%; ticks: {formatNumber(details.artifact.ticks)}.</p>}
+            </div>
+          </> : <p>Calculation details are unavailable for this entry.</p>}
+        </section>
+      </div>, document.body)}
     </section>
   );
 }

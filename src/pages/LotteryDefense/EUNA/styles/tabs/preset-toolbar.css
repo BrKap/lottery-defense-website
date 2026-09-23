@@ -1,0 +1,13 @@
+.preset-toolbar { padding: .75rem 1rem; }
+.preset-toolbar-main { display: flex; align-items: end; gap: .75rem; flex-wrap: wrap; }
+.preset-toolbar-picker { display: grid; gap: .25rem; min-width: 180px; flex: 1 1 180px; max-width: 300px; }
+.preset-toolbar-picker span { color: var(--text-muted, #aeb8c8); font-size: .75rem; font-weight: 700; text-transform: uppercase; }
+.preset-toolbar-picker select { width: 100%; padding: .55rem .65rem; background: var(--panel-bg-strong); border: 1px solid var(--border-color); border-radius: 10px; color: var(--text-color); }
+.preset-toolbar-actions { display: flex; gap: .35rem; align-items: center; flex-wrap: wrap; }
+.preset-toolbar-actions button, .preset-toolbar-button { display: inline-flex; align-items: center; justify-content: center; min-width: 38px; min-height: 38px; padding: .35rem .5rem; border: 1px solid var(--border-color); border-radius: 9px; background: var(--panel-bg-soft); color: var(--text-color); text-decoration: none; cursor: pointer; }
+.preset-toolbar-actions button:hover, .preset-toolbar-button:hover { border-color: var(--text-color); }
+.preset-toolbar-actions button:disabled { opacity: .5; cursor: not-allowed; }
+.preset-toolbar-panel { display: flex; align-items: end; flex-wrap: wrap; gap: .6rem; margin-top: .8rem; padding-top: .8rem; border-top: 1px solid var(--border-color-soft); }
+.preset-toolbar-panel .stacked-field { min-width: min(260px, 100%); }
+.preset-import-preview { flex-basis: 100%; }
+.preset-toolbar-message { margin: .5rem 0 0; }

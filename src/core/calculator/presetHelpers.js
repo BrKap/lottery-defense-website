@@ -53,5 +53,5 @@ export function changePreset(state, action, config) {
   }
   const imported = parsePreset(JSON.stringify(selected.build),config);
   library.activeId = selected.id;
-  return {...next,...imported.build,calculatorSettings:{...imported.build.calculatorSettings,presetName:selected.name},presetLibrary:library,activeTab:'presets'};
+  return {...next,...imported.build,calculatorSettings:{...imported.build.calculatorSettings,presetName:selected.name},presetLibrary:library,activeTab:state.activeTab === 'presets' ? 'main' : state.activeTab};
 }
