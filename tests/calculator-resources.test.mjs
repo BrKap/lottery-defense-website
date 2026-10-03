@@ -7,7 +7,7 @@ const recipeAudit = JSON.parse(fs.readFileSync(new URL('./fixtures/calculator-re
 const near = (a, b) => assert(Math.abs(a - b) < 1e-8, `${a} != ${b}`);
 
 test('Resource costs, estimates and ingredient totals', async t => withCalculatorModules(async ({ config, helpers, state, stats, loadModule }) => {
-  const { calculateResources, calculateGpEstimate, calculateIngredients } = await loadModule('/src/core/calculator/resourceCalculation.js');
+  const { calculateResources, calculateWaveBudget, calculateGpEstimate, calculateIngredients } = await loadModule('/src/core/calculator/resourceCalculation.js');
   const groups = config.UPGRADE_GROUPS;
   const find = (group, id) => groups.find(g => g.id === group).upgrades.find(u => u.id === id);
   const total = (g, id, n) => helpers.getTotalUpgradePrice(find(g, id), n);
@@ -81,6 +81,39 @@ test('Resource costs, estimates and ingredient totals', async t => withCalculato
     assert.equal(calculateResources(settings, options, {}, groups).bankNet, 0);
     assert.equal(calculateResources(settings, options, { divine: { 'sp-bank': 999 } }, groups).bankLevel, 250);
     assert.equal(calculateResources({ ...settings, gameMode: 'Hyper' }, options, {}, groups).bankReturn, null);
+  });
+  await t.test('shared wave budget earns EP from XP without converting XP into SP', () => {
+    const settings = { gameMode: 'Classic', round: 20, startingSp: 100000, startingEp: 2, xp: 59999 };
+    const base = { divine: { 'sp-bank': 2 }, ep: { 'atk-dmg-e-': 1 } };
+    const before = calculateWaveBudget(settings, base, groups, 9);
+    assert.equal(before.availableSp, 100000);
+    assert.equal(before.availableEp, 3);
+    assert.equal(before.bankPayouts, 0);
+    const first = calculateWaveBudget(settings, base, groups, 10);
+    assert.equal(first.availableSp, 102000);
+    assert.equal(first.availableEp, 3);
+    assert.equal(first.bankPayouts, 1);
+    assert.equal(calculateWaveBudget(settings, base, groups, 19).availableSp, 102000);
+    assert.equal(calculateWaveBudget(settings, base, groups, 20).availableSp, 104000);
+    const resources = calculateResources(settings, { includeInfinite: false }, base, groups);
+    assert.equal(resources.availableSp, 104000);
+    assert.equal(resources.spentSp, 20050);
+    assert.equal(resources.remainingSp, 83950);
+    assert.equal(resources.spentEp, 1);
+    assert.equal(resources.remainingEp, 2);
+    assert.equal(resources.affordable, true);
+    assert.equal(calculateResources(settings, { includeInfinite: true, targetRound: 10 }, base, groups).remainingSp, 81950);
+    assert.equal(calculateWaveBudget({ ...settings, xp: 60000 }, base, groups).availableEp, 4);
+    assert.equal(calculateWaveBudget({ ...settings, xp: 90000000 }, base, groups).availableSp, 104000);
+  });
+  await t.test('optimizer spending includes Infinite even when display preference excludes it', () => {
+    const investments = { infinite: { 'atk-dmg-inf-': 2 } };
+    const resources = calculateResources({ gameMode: 'Classic', round: 0, startingSp: 500, startingEp: 0, xp: 29999 }, { includeInfinite: false }, investments, groups);
+    assert.equal(resources.budgetSp, 0);
+    assert.equal(resources.spentSp, 1000);
+    assert.equal(resources.remainingSp, -500);
+    assert.equal(resources.availableEp, 0);
+    assert.equal(resources.affordable, false);
   });
   await t.test('purchased bank pays automatically at each ten-round boundary, including target', () => {
     const settings = { gameMode: 'Classic', round: 270, startingSp: 10000000 };

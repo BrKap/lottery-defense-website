@@ -7,7 +7,7 @@ export default function UpgradeRecommendations({ result, settings, setSettings, 
   if (!result) return null;
   return <section className="upgrade-recommendations" aria-label="Upgrade recommendations">
     <h4>Upgrade recommendations</h4>
-    <label>Optimization algorithm <select value={settings.algorithmId} onChange={event => setSettings({ algorithmId:event.target.value })}>
+    <label>Optimization algorithm <select value={settings.algorithmId} onChange={event => setSettings(current => ({ ...current, algorithmId:event.target.value }))}>
       {!OPTIMIZER_ALGORITHMS.some(a => a.id === settings.algorithmId) && <option value={settings.algorithmId}>Unavailable algorithm</option>}
       {OPTIMIZER_ALGORITHMS.map(a => <option key={a.id} value={a.id}>{a.label}</option>)}
     </select></label>

@@ -1,5 +1,5 @@
 import { createDefaultCalculatorState, normalizeCalculatorState, SCHEMA_VERSION, unitInputs } from './calculatorState';
-const fields = ['schemaVersion','versionId','dataRevision','calculatorSettings','units','jewels','runeLoadouts','spInvestments','buffState','sandboxState','additionalRuneState','resourceSettings','optimizerSettings','recovered'];
+const fields = ['schemaVersion','versionId','dataRevision','calculatorSettings','units','jewels','runeLoadouts','spInvestments','baseInvestments','buffState','sandboxState','additionalRuneState','resourceSettings','optimizerSettings','recovered'];
 const clone = value => JSON.parse(JSON.stringify(value));
 export function snapshotBuild(state) {
   const build = Object.fromEntries(fields.filter(key => state[key] !== undefined).map(key => [key, clone(state[key])]));

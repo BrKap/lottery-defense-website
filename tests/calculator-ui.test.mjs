@@ -23,6 +23,9 @@ test('Calculator controls and shared result rendering', async t => withCalculato
     const result = scenario.calculateScenario(saved.calculatorSettings);
     const army = damage.calculateArmyDamage(units, { config, profile: stats.calculateProfileStats({}), scenario: result, jewels: saved.jewels });
     const main = render(MainTab, { calculatorSettings: saved.calculatorSettings, derivedStats: { requiredDps: result.requiredDps }, units, updateSetting: noop, activeRune: saved.runeLoadouts[0], buffs: saved.buffState, sandbox: saved.sandboxState, additionalRune: saved.additionalRuneState, scenario: result, army });
+    assert.match(main, /Starting SP/);
+    assert.match(main, /Starting EP/);
+    assert.doesNotMatch(main, /Apply unit penetration/);
     const build = render(BuildUnitsTab, { jewels: saved.jewels, results: army.entries, units, selectedUnitId: 'amon', setSelectedUnitId: noop, addUnit: noop, removeUnit: noop, updateUnit: noop });
     const formatted = formatNumber(army.entries[0].fullDps);
     assert(main.includes(formatted)); assert(build.includes(formatted));
@@ -45,6 +48,30 @@ test('Calculator controls and shared result rendering', async t => withCalculato
     assert.match(html, /Select Upgrade\+/);
     assert.equal((html.match(/aria-label="Additional Rune (?!calculation)/g) ?? []).length, 6);
     assert.doesNotMatch(html, /aria-label="Additional Rune (Skill Damage|Armor Reduction|Multi Crit)"/);
+  });
+  await t.test('automatic upgrade controls show base additions and supported-wave schedule', async () => {
+    const { default: SpUpgradesTab } = await loadModule('/src/pages/LotteryDefense/EUNA/calculator/tabs/SpUpgradesTab.jsx');
+    const investments = structuredClone(saved.spInvestments);
+    investments.rookie['atk-dmg-i'] = 2;
+    const html = render(SpUpgradesTab, {
+      activeGroupId: 'rookie', setActiveGroupId: noop, investments,
+      baseInvestments: saved.baseInvestments, onManualInvestment: noop,
+      resources: null, resourceSettings: saved.resourceSettings, setResourceSettings: noop,
+      recommendations: null, optimizerSettings: saved.optimizerSettings, setOptimizerSettings: noop,
+      optimization: { status: 'complete', stale: false, result: {
+        status: 'supported', objectiveMode: 'build', baseScore: { coverage: 10 }, finalScore: { coverage: 12 },
+        totals: { totalSpOverall: 100, totalEpOverall: 0 }, evaluations: 12, schedule: [{
+          wave: 180, availableSp: 1000, availableEp: 1, spentSp: 100, spentEp: 0,
+          purchases: [{ groupId: 'rookie', upgradeId: 'atk-dmg-i', name: 'Atk Dmg I', fromLevel: 1, toLevel: 2, price: 50, currency: 'SP' }],
+        }], nextUpgrade: { groupId: 'rookie', upgradeId: 'atk-dmg-i', name: 'Atk Dmg I', currency: 'SP', price: 50 },
+      } }, onOptimize: noop, onPreviewOptimization: noop, onCancelOptimization: noop,
+      onUndoOptimization: noop, onResetOptimization: noop, blocked: false,
+    });
+    assert.match(html, /Optimize upgrades/);
+    assert.match(html, /Find next upgrade/);
+    assert.match(html, /10% → 12%/);
+    assert.match(html, /Wave 180/);
+    assert.match(html, /\+2 optimized/);
   });
   await t.test('ToC replaces Round; unsupported floors cannot show a stale requirement', () => {
     const settings = { ...saved.calculatorSettings, tocMode: true, tocFloor: 85 };

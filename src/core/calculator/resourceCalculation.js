@@ -13,21 +13,46 @@ export function calculateGpEstimate(settings = {}, options = {}) {
   } };
 }
 
-export function calculateResources(settings, options, investments, groups) {
+// XP records progress. It earns EP, but is not spent or converted into SP.
+// For a target-wave plan, pass base investments so the bank level stays fixed.
+export function calculateWaveBudget(settings = {}, investments = {}, groups = [], targetRound) {
+  const round = Number(targetRound ?? (settings.tocMode ? settings.tocFloor : settings.round));
+  const supported = Boolean(settings.tocMode || settings.gameMode === 'Classic');
+  const bankUpgrade = groups.find(g => g.id === 'divine')?.upgrades.find(u => u.id === 'sp-bank');
+  const bankLevel = bankUpgrade ? sanitizeInvestmentValue(bankUpgrade, investments.divine?.['sp-bank'] ?? 0) : 0;
+  const bankCost = bankUpgrade ? getTotalUpgradePrice(bankUpgrade, bankLevel) : 0;
+  const bankPayouts = supported && Number.isFinite(round) ? Math.max(0, Math.floor(round / 10)) : null;
+  const bankReturn = bankPayouts === null ? null : bankLevel * 1000 * bankPayouts;
+  const whole = value => Number.isFinite(Number(value)) ? Math.max(0, Math.min(Number.MAX_SAFE_INTEGER, Math.floor(Number(value)))) : 0;
+  const startingSp = whole(settings.startingSp);
+  const startingEp = whole(settings.startingEp);
+  const xp = whole(settings.xp);
+  const earnedEp = Math.floor(xp / 30000);
+  return {
+    round, startingSp, startingEp, xp, earnedEp,
+    availableSp: startingSp + (bankReturn ?? 0),
+    availableEp: startingEp + earnedEp,
+    bankLevel, bankCost, bankPayouts, bankReturn,
+  };
+}
+
+export function calculateResources(settings = {}, options = {}, investments = {}, groups = []) {
   const totals = calculateUpgradeTotals(investments, groups);
   const selectedGroups = groups.filter(g => g.currency !== 'EP' && (options.includeInfinite || g.id !== 'infinite'));
   const knownBudgetSp = selectedGroups.reduce((sum, g) => sum + totals.groupTotals[g.id], 0);
   const unknown = totals.unknownCostUpgrades.filter(u => selectedGroups.some(g => g.id === u.groupId));
   const budgetSp = unknown.length ? null : knownBudgetSp;
-  const round = Number(settings.tocMode ? settings.tocFloor : settings.round);
-  const supported = Boolean(settings.tocMode || settings.gameMode === 'Classic');
-  const bankUpgrade = groups.find(g => g.id === 'divine')?.upgrades.find(u => u.id === 'sp-bank');
-  const bankLevel = bankUpgrade ? sanitizeInvestmentValue(bankUpgrade, investments.divine?.['sp-bank'] ?? 0) : 0;
-  const bankCost = bankUpgrade ? getTotalUpgradePrice(bankUpgrade, bankLevel) : 0;
-  const bankPayouts = supported ? Math.max(0, Math.floor(round / 10)) : null;
-  const bankReturn = supported ? bankLevel * 1000 * bankPayouts : null;
-  const startingSp = Math.max(0, Number(settings.startingSp) || 0);
-  return { ...totals, knownBudgetSp, budgetSp, unknown, startingSp, round, bankLevel, bankCost, bankReturn, bankPayouts,
+  const budget = calculateWaveBudget(settings, investments, groups, options?.targetRound);
+  const { startingSp, bankReturn, bankCost } = budget;
+  const unknownSp = totals.unknownCostUpgrades.filter(u => groups.find(g => g.id === u.groupId)?.currency !== 'EP');
+  const unknownEp = totals.unknownCostUpgrades.filter(u => groups.find(g => g.id === u.groupId)?.currency === 'EP');
+  const spentSp = unknownSp.length ? null : totals.totalSpOverall;
+  const spentEp = unknownEp.length ? null : totals.totalEpOverall;
+  const remainingSp = spentSp === null ? null : budget.availableSp - spentSp;
+  const remainingEp = spentEp === null ? null : budget.availableEp - spentEp;
+  return { ...totals, ...budget, knownBudgetSp, budgetSp, unknown, unknownSp, unknownEp,
+    spentSp, spentEp, remainingSp, remainingEp,
+    affordable: remainingSp !== null && remainingEp !== null && remainingSp >= 0 && remainingEp >= 0,
     bankNet: bankReturn === null ? null : bankReturn - bankCost,
     remainingStart: budgetSp === null ? null : startingSp - budgetSp,
     remainingTarget: budgetSp === null || bankReturn === null ? null : startingSp + bankReturn - budgetSp,

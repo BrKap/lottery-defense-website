@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import './styles/ld-euna-index.css';
 import {
   addNormalJewel,
@@ -12,6 +12,7 @@ import { calculateUpgradeRecommendations } from '../../../core/calculator/upgrad
 import { calculateResources, calculateIngredients } from '../../../core/calculator/resourceCalculation';
 import { loadCalculatorState, saveCalculatorState, hydrateUnits, appendBuildUnit, updateBuildUnit, updateRuneField } from '../../../core/calculator/calculatorState';
 import { calculateProfileStats } from '../../../core/calculator/statCalculator';
+import { sanitizeInvestmentValue } from '../../../core/calculator/spUpgradeHelpers';
 import FloatingStatsPanel from './calculator/FloatingStatsPanel';
 import CalculatorHero from './calculator/CalculatorHero';
 import CalculatorTabs from './calculator/CalculatorTabs';
@@ -22,6 +23,16 @@ import JewelsTab from './calculator/tabs/JewelsTab';
 import BuffsTab from './calculator/tabs/BuffsTab';
 import PresetToolbar from './calculator/PresetToolbar';
 import BuildUnitsTab from './calculator/tabs/BuildUnitsTab';
+
+function optimizerFingerprintForState(value) {
+  return JSON.stringify({
+    settings: value.calculatorSettings, baseInvestments: value.baseInvestments,
+    units: value.units, jewels: value.jewels, runeLoadouts: value.runeLoadouts,
+    buffs: value.buffState, sandbox: value.sandboxState, additionalRune: value.additionalRuneState,
+    resourceSettings: value.resourceSettings, strategyId: value.optimizerSettings.strategyId,
+    objectiveMode: value.optimizerSettings.objectiveMode,
+  });
+}
 
 export default function LotteryDefenseCalculatorPage({ versionConfig }) {
   const calculatorConfig = versionConfig.calculator;
@@ -34,6 +45,9 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
   const [state, setState] = useState(loaded.state);
   const [notice, setNotice] = useState('');
   const [saveError, setSaveError] = useState('');
+  const [optimization, setOptimization] = useState({ status: 'idle' });
+  const optimizerWorker = useRef(null);
+  const optimizerRunId = useRef(0);
   const setField = (field) => (value) => {
     if (loaded.blocked) return;
     setState(current => ({ ...current, [field]: typeof value === 'function' ? value(current[field]) : value }));
@@ -43,6 +57,111 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
   const setActiveTab = setField('activeTab'), setJewels = setField('jewels'), setSelectedUnitId = setField('selectedUnitId');
   const setCalculatorSettings = setField('calculatorSettings'), setUnits = setField('units');
   const setSpActiveGroupId = setField('spActiveGroupId'), setSpInvestments = setField('spInvestments'), setRuneLoadouts = setField('runeLoadouts');
+  const optimizerInputFingerprint = useMemo(() => optimizerFingerprintForState(state), [state.calculatorSettings, state.baseInvestments, state.units, state.jewels,
+    state.runeLoadouts, state.buffState, state.sandboxState, state.additionalRuneState,
+    state.resourceSettings, state.optimizerSettings.strategyId, state.optimizerSettings.objectiveMode]);
+  const latestOptimizerInput = useRef(optimizerInputFingerprint);
+  latestOptimizerInput.current = optimizerInputFingerprint;
+  useEffect(() => {
+    if (optimizerWorker.current) {
+      optimizerWorker.current.terminate();
+      optimizerWorker.current = null;
+      optimizerRunId.current += 1;
+    }
+    setOptimization(current => current.status === 'idle' ? current : { ...current, stale: true,
+      status: current.status === 'running' ? 'cancelled' : current.status });
+  }, [optimizerInputFingerprint]);
+  useEffect(() => () => optimizerWorker.current?.terminate(), []);
+
+  const updateManualInvestment = (groupId, upgradeId, nextValue) => {
+    if (loaded.blocked) return;
+    const group = calculatorConfig.UPGRADE_GROUP_MAP[groupId];
+    const upgrade = group?.upgrades.find(entry => entry.id === upgradeId);
+    if (!upgrade) return;
+    const level = sanitizeInvestmentValue(upgrade, nextValue);
+    setState(current => {
+      const withLevel = source => ({ ...source, [groupId]: { ...source?.[groupId], [upgradeId]: level } });
+      return { ...current, baseInvestments: withLevel(current.baseInvestments ?? current.spInvestments),
+        spInvestments: withLevel(current.spInvestments) };
+    });
+  };
+  const cancelOptimization = () => {
+    optimizerWorker.current?.terminate();
+    optimizerWorker.current = null;
+    optimizerRunId.current += 1;
+    setOptimization(current => ({ ...current, status: 'cancelled' }));
+  };
+  const runOptimization = (apply = true) => {
+    if (loaded.blocked) return;
+    optimizerWorker.current?.terminate();
+    const runId = ++optimizerRunId.current;
+    const fingerprint = latestOptimizerInput.current;
+    const previousInvestments = structuredClone(state.spInvestments);
+    let worker;
+    try {
+      worker = new Worker(new URL('../../../core/calculator/automaticUpgradeWorker.js', import.meta.url), { type: 'module' });
+    } catch (error) {
+      setOptimization({ status: 'error', reason: error.message || 'Optimization worker could not start.' });
+      return;
+    }
+    optimizerWorker.current = worker;
+    setOptimization({ status: 'running', stale: false, progress: null, apply });
+    worker.onmessage = event => {
+      const message = event.data ?? {};
+      if (runId !== optimizerRunId.current || fingerprint !== latestOptimizerInput.current) return;
+      if (message.type === 'progress') {
+        setOptimization(current => ({ ...current, progress: message.progress ?? message }));
+        return;
+      }
+      if (message.type !== 'result' && message.type !== 'error') return;
+      worker.terminate();
+      if (optimizerWorker.current === worker) optimizerWorker.current = null;
+      if (message.type === 'error') {
+        setOptimization({ status: 'error', reason: message.reason ?? message.error ?? 'Optimization failed.' });
+        return;
+      }
+      const result = message.result;
+      if (result?.status !== 'supported' || !result.investments) {
+        setOptimization({ status: 'unavailable', reason: result?.reason ?? 'No feasible optimization was found.', result });
+        return;
+      }
+      if (apply) setState(current => optimizerFingerprintForState(current) === fingerprint
+        ? { ...current, spInvestments: result.investments } : current);
+      setOptimization({ status: apply ? 'complete' : 'preview', stale: false, result, previousInvestments });
+    };
+    worker.onerror = event => {
+      if (runId !== optimizerRunId.current || fingerprint !== latestOptimizerInput.current) return;
+      worker.terminate();
+      if (optimizerWorker.current === worker) optimizerWorker.current = null;
+      setOptimization({ status: 'error', reason: event.message || 'Optimization worker failed.' });
+    };
+    try {
+      worker.postMessage({ type: 'optimize', runId, payload: {
+        settings: state.calculatorSettings, units, jewels: state.jewels,
+        runeLoadouts: state.runeLoadouts, buffs: state.buffState,
+        sandboxState: state.sandboxState, additionalRuneState: state.additionalRuneState,
+        resourceSettings: state.resourceSettings,
+        baseInvestments: state.baseInvestments ?? state.spInvestments,
+        strategyId: state.optimizerSettings.strategyId ?? 'full-greedy',
+        objectiveMode: state.optimizerSettings.objectiveMode ?? 'build',
+        ...(apply ? {} : { maxEvaluations: 500 }),
+      } });
+    } catch (error) {
+      worker.terminate();
+      optimizerWorker.current = null;
+      setOptimization({ status: 'error', reason: error.message || 'Optimization could not start.' });
+    }
+  };
+  const undoOptimization = () => {
+    if (!optimization.previousInvestments || optimization.stale || loaded.blocked) return;
+    setSpInvestments(optimization.previousInvestments);
+    setOptimization({ status: 'idle' });
+  };
+  const resetOptimization = () => {
+    if (loaded.blocked) return;
+    setSpInvestments(structuredClone(state.baseInvestments ?? state.spInvestments));
+    setOptimization({ status: 'idle' });
+  };
   useEffect(() => {
     try { saveCalculatorState(window.localStorage, state, loaded); setSaveError(''); }
     catch { setSaveError('Changes could not be saved. Keep this page open and export your recovery data before closing.'); }
@@ -226,7 +345,15 @@ export default function LotteryDefenseCalculatorPage({ versionConfig }) {
           activeGroupId={spActiveGroupId}
           setActiveGroupId={setSpActiveGroupId}
           investments={spInvestments}
-          setInvestments={setSpInvestments}
+          baseInvestments={state.baseInvestments ?? spInvestments}
+          onManualInvestment={updateManualInvestment}
+          optimization={optimization}
+          onOptimize={() => runOptimization(true)}
+          onPreviewOptimization={() => runOptimization(false)}
+          onCancelOptimization={cancelOptimization}
+          onUndoOptimization={undoOptimization}
+          onResetOptimization={resetOptimization}
+          blocked={loaded.blocked}
         />
       )}
 

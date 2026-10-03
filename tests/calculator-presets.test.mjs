@@ -7,20 +7,28 @@ import { withCalculatorModules } from '../scripts/calculator/load-calculator-mod
 test('Portable JSON presets and complete build persistence', async t => withCalculatorModules(async ({ config, state, loadModule }) => {
   const {snapshotBuild,exportPreset,parsePreset,changePreset}=await loadModule('/src/core/calculator/presetHelpers.js');
   const rich=state.createDefaultCalculatorState(config);
-  rich.calculatorSettings={...rich.calculatorSettings,presetName:'Review build',tocMode:true,tocFloor:81,round:270,runeSlot:'Test',startingSp:10000000};
+  rich.calculatorSettings={...rich.calculatorSettings,presetName:'Review build',tocMode:true,tocFloor:81,round:270,runeSlot:'Test',startingSp:10000000,startingEp:5};
   rich.units[0].overmindStacks=5; rich.units[0].xnkFixedAttacks=false; rich.units[1].jewel=rich.jewels[0].entryId;
   rich.jewels[0].jewelUpgrade='3'; rich.buffState.supports.stukov=2;
-  rich.resourceSettings.gpEstimatesEnabled=true; rich.spInvestments.divine['sp-bank']=250;
+  rich.resourceSettings.gpEstimatesEnabled=true; rich.spInvestments.divine['sp-bank']=250; rich.baseInvestments.divine['sp-bank']=250;
   rich.additionalRuneState={...rich.additionalRuneState,enabled:true,method:'manual',stats:{attackDamage:123}};
   await t.test('full build round trip retains IDs, assignments and every calculation input', () => {
     const decoded=parsePreset(exportPreset(rich),config).build;
     assert.equal(decoded.units[0].overmindStacks,5); assert.equal(decoded.units[0].xnkFixedAttacks,false);
     assert.equal(decoded.units[1].jewel,decoded.jewels[0].entryId);
     assert.equal(decoded.buffState.supports.stukov,2); assert.equal(decoded.spInvestments.divine['sp-bank'],250);
+    assert.equal(decoded.baseInvestments.divine['sp-bank'],250); assert.equal(decoded.calculatorSettings.startingEp,5);
     assert.equal(decoded.calculatorSettings.round,270); assert.equal(decoded.calculatorSettings.tocFloor,81);
     assert.equal(decoded.additionalRuneState.stats.attackDamage,123); assert(decoded.resourceSettings.gpEstimatesEnabled);
     assert.equal(decoded.optimizerSettings.algorithmId,'amon-estimate');
     assert(!('presetLibrary' in decoded)); assert(!('uiSettings' in decoded));
+  });
+  await t.test('older presets without base investments preserve their manual levels', () => {
+    const legacy = snapshotBuild(rich);
+    delete legacy.baseInvestments;
+    const imported = parsePreset(JSON.stringify(legacy), config);
+    assert.equal(imported.build.baseInvestments.divine['sp-bank'], 250);
+    assert.equal(imported.build.spInvestments.divine['sp-bank'], 250);
   });
   await t.test('new checkpoints edits, duplicate isolates them, rename and delete are reversible', () => {
     let current=changePreset(rich,{type:'new',name:'Fresh'},config);

@@ -107,6 +107,13 @@ export default function MainTab({
               onChange={(value) => updateSetting('startingSp', value)}
             />
 
+            <NumberField
+              label="Starting EP"
+              value={calculatorSettings.startingEp ?? 0}
+              min={0}
+              onChange={(value) => updateSetting('startingEp', value)}
+            />
+
             <InputField
               label="The Zero Level"
               value={calculatorSettings.theZeroLevel ?? 0}
@@ -119,7 +126,6 @@ export default function MainTab({
               checked={calculatorSettings.tocMode}
               onChange={(checked) => updateSetting('tocMode', checked)}
             />
-            <CheckboxField label="Apply unit penetration" checked={calculatorSettings.penetrationEnabled} onChange={checked => updateSetting('penetrationEnabled', checked)} />
             <NumberField label="GP" value={calculatorSettings.gp} min={0} max={400} onChange={value => updateSetting('gp', value)} />
           </div>
         </section>

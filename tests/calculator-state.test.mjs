@@ -45,6 +45,34 @@ test('State: catalogs, migration and persistence', async t => withCalculatorModu
     assert.equal(result.state.runeLoadouts[5].attackDamageBase, '123');
     assert(result.notes.some(n => n.includes('unresolved jewel')));
   });
+  await t.test('legacy upgrades migrate to mandatory base levels and penetration is always active', () => {
+    const saved = defaults();
+    saved.calculatorSettings.penetrationEnabled = false;
+    saved.calculatorSettings.startingEp = 7;
+    saved.spInvestments.rookie['atk-dmg-i'] = 3;
+    saved.spInvestments.divine['sp-bank'] = 2;
+    delete saved.baseInvestments;
+    const migrated = api.normalizeCalculatorState(saved, config);
+    assert.equal(migrated.state.calculatorSettings.penetrationEnabled, true);
+    assert.equal(migrated.state.calculatorSettings.startingEp, 7);
+    assert.equal(migrated.state.baseInvestments.rookie['atk-dmg-i'], 3);
+    assert.equal(migrated.state.baseInvestments.divine['sp-bank'], 2);
+    assert.equal(migrated.state.spInvestments.rookie['atk-dmg-i'], 3);
+    assert.notEqual(migrated.state.baseInvestments, migrated.state.spInvestments);
+    assert.equal(migrated.state.optimizerSettings.algorithmId, 'amon-estimate');
+    assert.equal(migrated.state.optimizerSettings.strategyId, 'full-greedy');
+    assert.equal(migrated.needsRecovery, true);
+  });
+  await t.test('base levels clamp to caps and applied levels cannot fall below base', () => {
+    const saved = defaults();
+    saved.baseInvestments.rookie['atk-dmg-i'] = 99999;
+    saved.spInvestments.rookie['atk-dmg-i'] = 0;
+    const normalized = api.normalizeCalculatorState(saved, config);
+    const max = config.UPGRADE_GROUP_MAP.rookie.upgrades.find(u => u.id === 'atk-dmg-i').maxInvestments;
+    assert.equal(normalized.state.baseInvestments.rookie['atk-dmg-i'], max);
+    assert.equal(normalized.state.spInvestments.rookie['atk-dmg-i'], max);
+    assert(normalized.notes.some(n => n.includes('mandatory base')));
+  });
   await t.test('empty build stays empty; unknown records and invalid nested sections recover', () => {
     const result = api.normalizeCalculatorState({ units: [], jewels: [null], runeLoadouts: null, buffState: { supports: null }, extra: { userField: 'keep' } }, config);
     assert.equal(result.state.units.length, 0);

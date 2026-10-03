@@ -20,18 +20,20 @@ export function createDefaultCalculatorState(config) {
   return {
     schemaVersion: SCHEMA_VERSION, versionId: 'euna', dataRevision: config.DATA_REVISION,
     activeTab: 'main', selectedUnitId: config.unitLibrary[0]?.id ?? '', spActiveGroupId: config.UPGRADE_GROUPS[0]?.id,
-    calculatorSettings: { title: 'Rookie', difficulty: 'Practice', torment: 0, round: 270, xp: 0, startingSp: 0,
+    calculatorSettings: { title: 'Rookie', difficulty: 'Practice', torment: 0, round: 270, xp: 0, startingSp: 0, startingEp: 0,
       gameMode: 'Classic', tocMode: false, tocFloor: 70, gp: 0, theZeroLevel: 0,
       runeSlot: config.RUNE_SLOTS[0]?.value, presetName: 'Default EUNA Preset', penetrationEnabled: true },
     units: config.unitLibrary.filter((_, i) => [0,1,3].includes(i)).map(u => unitInputs(createUnitEntry(u))),
     jewels: createLegendaryJewelsState({ legendaryJewels: config.JEWEL_TYPES.filter(j => j.id !== 'square'), normalJewelDefault: config.NORMAL_JEWEL_DEFAULT }),
-    runeLoadouts: config.createInitialRuneLoadouts().map(r => ({ ...r, manualModifiers: { attackDamage: 0, attackSpeed: 0, critDamage: 0, critChance: 0 } })), spInvestments: buildInitialInvestments(config.UPGRADE_GROUPS),
+    runeLoadouts: config.createInitialRuneLoadouts().map(r => ({ ...r, manualModifiers: { attackDamage: 0, attackSpeed: 0, critDamage: 0, critChance: 0 } })),
+    spInvestments: buildInitialInvestments(config.UPGRADE_GROUPS),
+    baseInvestments: buildInitialInvestments(config.UPGRADE_GROUPS),
     buffState: { teamBuffCount: 0, bless: 1, selectUpgradeEnabled: false, sdGem: 'none', critGem: false, shieldMaster: false, superShield: false,
       powerBanker: false, powerBankerPlus: false, superBuff: false, superBuffPlus: false, purifierEnabled: false,
       supports: { corruption: 0, godOfTime: 0, stukov: 0, warfield: 0, talTempest: 0, tassadar: 0, vessel: 0 } },
     sandboxState: { enabled: false, stats: { ...zeroStats } }, additionalRuneState: { enabled: false, method: 'manual', stats: { ...zeroStats } },
     resourceSettings: { includeInfinite: true, gpEstimatesEnabled: false },
-    optimizerSettings: { algorithmId: 'amon-estimate' },
+    optimizerSettings: { algorithmId: 'amon-estimate', strategyId: 'full-greedy', objectiveMode: 'build' },
     presetLibrary: { activeId: null, items: [], deleted: null },
     uiSettings: { panelDocked: true, panelMinimized: false, panelExtras: false },
     recovered: [], migrationNotes: [],
@@ -84,8 +86,11 @@ export function normalizeCalculatorState(saved, config) {
   state.calculatorSettings = merge(defaults.calculatorSettings, saved.calculatorSettings, 'settings');
   const settings = state.calculatorSettings, old = object(saved.calculatorSettings) ? saved.calculatorSettings : {};
   settings.startingSp = finite(old.startingSp ?? old.donationSp ?? old.sp, 0, 'settings.startingSp');
+  settings.startingEp = finite(old.startingEp, 0, 'settings.startingEp', 0, Number.MAX_SAFE_INTEGER, true);
   delete settings.donationSp; delete settings.sp;
   if (old.donationSp !== undefined || old.sp !== undefined) notes.push('Donation SP was migrated to Starting SP; the original save is available for recovery.');
+  if (old.penetrationEnabled === false) notes.push('Unit penetration is now always applied in the calculator.');
+  settings.penetrationEnabled = true;
   if (settings.gameMode === 'Standard') { settings.gameMode = 'Classic'; notes.push('Standard mode was renamed Classic.'); }
   settings.torment = finite(settings.torment, 0, 'settings.torment', 0, 20, true);
   settings.theZeroLevel = finite(settings.theZeroLevel, 0, 'settings.theZeroLevel', 0, 11, true);
@@ -160,16 +165,28 @@ export function normalizeCalculatorState(saved, config) {
   state.runeLoadouts.forEach(r => { if (typeof r.id !== 'string' || !r.id || runeIds.has(r.id)) r.id = id(); runeIds.add(r.id); });
   if (!config.RUNE_SLOTS.some(s => s.value === settings.runeSlot)) settings.runeSlot = defaults.calculatorSettings.runeSlot;
   const investments = object(saved.spInvestments) ? saved.spInvestments : {};
+  const bases = object(saved.baseInvestments) ? saved.baseInvestments : saved.baseInvestments === undefined ? investments : {};
   if (saved.spInvestments !== undefined && !object(saved.spInvestments)) recover('spInvestments', saved.spInvestments, 'Invalid investments retained in recovery.');
+  if (saved.baseInvestments !== undefined && !object(saved.baseInvestments)) recover('baseInvestments', saved.baseInvestments, 'Invalid base investments retained in recovery.');
+  if (saved.baseInvestments === undefined && saved.spInvestments !== undefined) notes.push('Existing upgrade levels were copied to mandatory base levels.');
   for (const group of config.UPGRADE_GROUPS) for (const upgrade of group.upgrades) {
     const value = investments[group.id]?.[upgrade.id];
+    const baseValue = bases[group.id]?.[upgrade.id];
     const safe = finite(value, 0, `investments.${group.id}.${upgrade.id}`, 0, upgrade.maxInvestments, true);
-    state.spInvestments[group.id][upgrade.id] = sanitizeInvestmentValue(upgrade, safe);
+    const safeBase = finite(baseValue, 0, `baseInvestments.${group.id}.${upgrade.id}`, 0, upgrade.maxInvestments, true);
+    state.baseInvestments[group.id][upgrade.id] = sanitizeInvestmentValue(upgrade, safeBase);
+    state.spInvestments[group.id][upgrade.id] = Math.max(state.baseInvestments[group.id][upgrade.id], sanitizeInvestmentValue(upgrade, safe));
+    if (state.spInvestments[group.id][upgrade.id] > safe) notes.push(`Applied ${upgrade.name} level was raised to its mandatory base level.`);
   }
   for (const [groupId, values] of Object.entries(investments)) {
     const group = config.UPGRADE_GROUPS.find(g => g.id === groupId);
     if (!group || !object(values)) recover(`investments.${groupId}`, values, 'Unknown investment group retained in recovery.');
     else for (const [key, value] of Object.entries(values)) if (!group.upgrades.some(u => u.id === key)) recover(`investments.${groupId}.${key}`, value, 'Unknown upgrade retained in recovery.');
+  }
+  for (const [groupId, values] of Object.entries(bases)) {
+    const group = config.UPGRADE_GROUPS.find(g => g.id === groupId);
+    if (!group || !object(values)) recover(`baseInvestments.${groupId}`, values, 'Unknown base investment group retained in recovery.');
+    else for (const [key, value] of Object.entries(values)) if (!group.upgrades.some(u => u.id === key)) recover(`baseInvestments.${groupId}.${key}`, value, 'Unknown base upgrade retained in recovery.');
   }
   for (const [key, allowed] of Object.entries({ activeTab: config.TAB_OPTIONS.map(t => t.id), selectedUnitId: config.unitLibrary.map(u => u.id), spActiveGroupId: config.UPGRADE_GROUPS.map(g => g.id) })) state[key] = allowed.includes(saved[key]) ? saved[key] : defaults[key];
   state.migrationNotes = [...new Set([...(Array.isArray(saved.migrationNotes) ? saved.migrationNotes.filter(n => typeof n === 'string') : []), ...notes])];
