@@ -9,6 +9,9 @@ const unavailable = (profile, scenario, reason, units) => ({ ...summarizeArmyEnt
 export function calculateBattle({ units, profile: baseProfile, settings, buffs, jewels, config }) {
   let scenario = calculateScenario(settings, baseProfile, buffs);
   if (scenario.status !== 'supported') return unavailable(baseProfile, scenario, scenario.reason, units);
+  // SC2_FIXED_4096: fixed rolling-mode stats do not establish cap-safe DPS.
+  // Do not feed a one-wave average into the legacy XNK/MT exposure formulas.
+  if (scenario.requiredDps === null) return unavailable(baseProfile, scenario, scenario.reason, units);
   const overmind = resolveOvermind(baseProfile, scenario, units, jewels, config);
   if (overmind.status !== 'supported') return unavailable(baseProfile, scenario, overmind.reason, units);
   const profile = applyOvermindProfile(baseProfile, overmind.selected);

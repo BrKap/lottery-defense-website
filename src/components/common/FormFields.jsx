@@ -31,12 +31,13 @@ export function NumberField({ label, value, onChange, min, max }) {
   );
 }
 
-export function CheckboxField({ label, checked, onChange }) {
+export function CheckboxField({ label, checked, onChange, disabled = false }) {
   return (
     <label className="stacked-checkbox-field">
       <span>{label}</span>
       <input
         type="checkbox"
+        disabled={disabled}
         checked={checked}
         onChange={(event) => onChange(event.target.checked)}
       />

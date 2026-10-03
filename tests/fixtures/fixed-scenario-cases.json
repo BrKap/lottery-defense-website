@@ -1,0 +1,41 @@
+{
+  "policy": "truncate-toward-zero",
+  "generator": "Independent Python Decimal operations, from fixed extraction; ceil deadline rates",
+  "cases": [
+    {
+      "mode": "Classic",
+      "round": 180,
+      "requiredDps": 391674.31201171875,
+      "mitigation": 0.53759765625,
+      "seconds": 102.58203125
+    },
+    {
+      "mode": "Classic",
+      "round": 269,
+      "requiredDps": 9566092.577636719,
+      "mitigation": 0.056884765625,
+      "seconds": 79.3876953125
+    },
+    {
+      "mode": "Classic",
+      "round": 270,
+      "requiredDps": 8915598.282958984,
+      "mitigation": 0.06103515625,
+      "seconds": 79.3876953125
+    },
+    {
+      "mode": "ToC",
+      "round": 70,
+      "requiredDps": 172655495.48706055,
+      "mitigation": 0.0625,
+      "seconds": 59.91357421875
+    },
+    {
+      "mode": "ToC",
+      "round": 90,
+      "requiredDps": 9849325253.327637,
+      "mitigation": 0.0625,
+      "seconds": 68.59521484375
+    }
+  ]
+}

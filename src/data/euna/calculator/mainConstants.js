@@ -52,8 +52,11 @@ export const PROFILE = {
 };
 
 export const GAME_MODES = ['Classic', 'Eternal', 'Hyper'];
-export const CLASSIC_ROUNDS = [115, 180, 190, 200, 210, 220, 240, 250, 260, 269, 270, 300];
-export const TOC_FLOORS = Array.from({ length: 15 }, (_, i) => 70 + i);
+// SC2_FIXED_4096: round/floor selectors are discrete integer indices, not fixed scalars.
+export const CLASSIC_ROUNDS = Array.from({ length: 300 }, (_, i) => i + 1);
+export const ETERNAL_ROUNDS = CLASSIC_ROUNDS;
+export const HYPER_ROUNDS = Array.from({ length: 115 }, (_, i) => i + 1);
+export const TOC_FLOORS = Array.from({ length: 90 }, (_, i) => i + 1);
 
 export const TAB_OPTIONS = [
   { id: 'main', label: 'Main' },

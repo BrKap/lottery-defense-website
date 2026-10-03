@@ -366,21 +366,33 @@ export function BuildMetaCard({ units }) {
 }
 
 export function CreepStatsCard({ scenario }) {
+  // SC2_FIXED_4096: display-only nearest-integer rounding. Scenario/data objects
+  // retain their exact grid values; no formatted value feeds a calculation.
+  const RoundStat = ({ label, value }) => <InfoRow label={label} value={typeof value === 'number' ? Math.round(value) : value} />;
   return (
     <section className="card sidebar-card">
       <h3>Enemy Creep Stats</h3>
       <div className="sidebar-list-grid creep-stats-grid">
         {scenario?.status === 'supported' ? <>
-          <InfoRow label="HP" value={scenario.enemy.hp} />
-          <InfoRow label="Shield" value={scenario.enemy.shield} />
-          <InfoRow label="Armor" value={scenario.enemy.armor} />
-          <InfoRow label="Shield Armor" value={scenario.enemy.shieldArmor} />
-          <InfoRow label="Enemy Count" value={scenario.enemy.count} />
-          <InfoRow label="Duration (seconds)" value={scenario.enemy.seconds} />
-          <InfoRow label="Reduced HP" value={scenario.reducedHP} />
-          <InfoRow label="Reduced Shield" value={scenario.reducedShield} />
+          <RoundStat label="HP" value={scenario.enemy.hp} />
+          <RoundStat label="Shield" value={scenario.enemy.shield} />
+          <RoundStat label="Armor" value={scenario.enemy.armor} />
+          <RoundStat label="Shield Armor" value={scenario.enemy.shieldArmor} />
+          <RoundStat label="Original spawns" value={scenario.enemy.spawnedCount} />
+          <RoundStat label="Full-clear kills" value={scenario.enemy.count} />
+          <RoundStat label="Spawn batches" value={scenario.enemy.batches} />
+          <RoundStat label="Spawn interval (game ms)" value={scenario.enemy.interval * 1000} />
+          <RoundStat label="Spawn phase (game s)" value={scenario.enemy.spawnSeconds} />
+          <RoundStat label="Post-spawn timer (game s)" value={scenario.enemy.postSpawnSeconds} />
+          <RoundStat label="Nominal duration (game s)" value={scenario.enemy.seconds} />
+          <RoundStat label="DT" value={scenario.enemy.doubleTime ? 'On' : 'Off'} />
+          {scenario.rollingMode && <RoundStat label="Creep penalty threshold" value={scenario.enemy.creepCap} />}
+          <RoundStat label="Reduced HP" value={scenario.reducedHP} />
+          <RoundStat label="Reduced Shield" value={scenario.reducedShield} />
         </> : <p>Enemy statistics unavailable for this scenario.</p>}
       </div>
+      {scenario?.status === 'supported' && <p>Nominal game-time values; actual trigger timing can differ.</p>}
+      {scenario?.status === 'supported' && <p>Stats are rounded for display; calculations retain full precision.</p>}
     </section>
   );
 }

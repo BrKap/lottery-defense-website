@@ -139,6 +139,11 @@ export async function optimizeUpgrades(snapshot, { onProgress = () => {}, should
   if (rawTargetRound == null || typeof rawTargetRound === 'string' && rawTargetRound.trim() === '' || !Number.isInteger(targetRound)) {
     return { status: 'unavailable', reason: 'Choose a valid round or floor.' };
   }
+  // SC2_FIXED_4096: discrete wave selection must resolve an actual fixed-data
+  // scenario. Never score an earlier wave as the selected unsupported target.
+  const selected = resolveScenario(settings.tocMode ? { ...settings, tocFloor: targetRound } : { ...settings, round: targetRound });
+  if (selected.status !== 'supported') return { status: 'unavailable', reason: selected.reason };
+  if (selected.rollingMode) return { status: 'unavailable', reason: 'Rolling-mode optimization awaits the cap-safe carryover calculation.' };
   const checkpoints = buildCheckpoints(settings, targetRound);
   if (!checkpoints.length) return { status: 'unavailable', reason: 'No enemy data is available at or before the selected wave.' };
   const scoringRound = checkpoints.at(-1);
@@ -193,7 +198,7 @@ export async function optimizeUpgrades(snapshot, { onProgress = () => {}, should
   let currentResolved = targetResolved;
   memo.set(key(state), last);
   const report = (phase, wave) => onProgress({ phase, wave, evaluations, maxEvaluations,
-    bestCoverage: last.score.coverage, spentSp, spentEp, elapsedMs: performance.now() - startedAt });
+    bestCoverage: last?.score?.coverage ?? baseScore.coverage, spentSp, spentEp, elapsedMs: performance.now() - startedAt });
   const evaluate = async investments => {
     const cacheKey = key(investments);
     if (memo.has(cacheKey)) return memo.get(cacheKey);
@@ -369,6 +374,9 @@ export async function optimizeUpgrades(snapshot, { onProgress = () => {}, should
   }
   const validated = scoreCandidate(snapshot, state, units, config, targetSettings, targetResolved);
   if (!validated.score) return { status: 'error', reason: 'The final plan could not be validated by the battle calculator.' };
+  // SC2_FIXED_4096: coverage remains an analytical ratio; reuse the verified
+  // final target score for reporting when the search evaluation limit is hit.
+  last = validated;
   const firstStep = steps[0];
   const nextUpgrade = firstStep ? { groupId: firstStep.groupId, upgradeId: firstStep.upgradeId,
     groupLabel: groups.find(group => group.id === firstStep.groupId)?.label, name: firstStep.name,

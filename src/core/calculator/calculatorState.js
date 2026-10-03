@@ -21,7 +21,7 @@ export function createDefaultCalculatorState(config) {
     schemaVersion: SCHEMA_VERSION, versionId: 'euna', dataRevision: config.DATA_REVISION,
     activeTab: 'main', selectedUnitId: config.unitLibrary[0]?.id ?? '', spActiveGroupId: config.UPGRADE_GROUPS[0]?.id,
     calculatorSettings: { title: 'Rookie', difficulty: 'Practice', torment: 0, round: 270, xp: 0, startingSp: 0, startingEp: 0,
-      gameMode: 'Classic', tocMode: false, tocFloor: 70, gp: 0, theZeroLevel: 0,
+      gameMode: 'Classic', tocMode: false, tocFloor: 70, doubleTime: true, gp: 0, theZeroLevel: 0,
       runeSlot: config.RUNE_SLOTS[0]?.value, presetName: 'Default EUNA Preset', penetrationEnabled: true },
     units: config.unitLibrary.filter((_, i) => [0,1,3].includes(i)).map(u => unitInputs(createUnitEntry(u))),
     jewels: createLegendaryJewelsState({ legendaryJewels: config.JEWEL_TYPES.filter(j => j.id !== 'square'), normalJewelDefault: config.NORMAL_JEWEL_DEFAULT }),
@@ -92,6 +92,10 @@ export function normalizeCalculatorState(saved, config) {
   if (old.penetrationEnabled === false) notes.push('Unit penetration is now always applied in the calculator.');
   settings.penetrationEnabled = true;
   if (settings.gameMode === 'Standard') { settings.gameMode = 'Classic'; notes.push('Standard mode was renamed Classic.'); }
+  if (typeof settings.doubleTime !== 'boolean') {
+    recover('settings.doubleTime', settings.doubleTime, 'Invalid DT setting retained in recovery.');
+    settings.doubleTime = true;
+  }
   settings.torment = finite(settings.torment, 0, 'settings.torment', 0, 20, true);
   settings.theZeroLevel = finite(settings.theZeroLevel, 0, 'settings.theZeroLevel', 0, 11, true);
   settings.gp = finite(settings.gp, 0, 'settings.gp', 0, 400, true);

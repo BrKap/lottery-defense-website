@@ -19,7 +19,7 @@ test('Support coverage and final battle calculations', async t => withCalculator
   };
   await t.test('exact lifetime helpers at Classic 180, 200 and ToC', () => {
     const e = calculateExposure(scenario.calculateScenario(settings));
-    near(e.mobSeconds, 7974.367346938776); near(e.averageMobLife, 35.91836734693878); near(e.artifactLife, 36.91836734693878);
+    near(e.mobSeconds, 8275.55141104561); near(e.averageMobLife, 37.31273801410005); near(e.artifactLife, 38.31273801410005);
     const late = calculateExposure(scenario.calculateScenario({ ...settings, round: 200 }));
     assert.equal(late.spawned, 120); near(late.averageMobLife, late.artifactLife / 2 - 1); assert(late.lateClassic);
     const toc = calculateExposure(scenario.calculateScenario({ ...settings, tocMode: true, tocFloor: 70 }));
@@ -36,16 +36,17 @@ test('Support coverage and final battle calculations', async t => withCalculator
   });
   await t.test('each support formula and multiplicative combined factor', () => {
     const b = run([unit('hybridlope'), unit('flower', { count: 3 })], { buffs: { supports: { stukov: 1, warfield: 1, talTempest: 1, tassadar: 1, vessel: 1, corruption: 1 } } });
-    const m = 7974.367346938776;
-    near(b.supports.coverage.hybridlope.uptime, 98 * 11.5 / 40 * 0.95 * 15 / m);
-    near(b.supports.coverage.stukov.uptime, 98 * 11.5 / 125 * 0.75 * 5 / m * 0.75);
-    near(b.supports.coverage.warfield.uptime, 98 / (1.3 * (1.5 / (1.15 * 1.1505))) * 0.1 * 2 / m);
-    near(b.supports.coverage.talTempest.uptime, 98 * 11.5 / 125 * 0.8 * 20 / m);
-    near(b.supports.coverage.tassadar.uptime, 98 * 11.5 / 150 * 5 / m);
-    near(b.supports.coverage.vessel.uptime, 98 * 11.5 / 125 * 0.8 * 15 / m);
-    near(b.supports.coverage.corruption.uptime, 15 / 98);
+    const m = 8275.55141104561;
+    const seconds = 102.58203125;
+    near(b.supports.coverage.hybridlope.uptime, seconds * 11.5 / 40 * 0.95 * 15 / m);
+    near(b.supports.coverage.stukov.uptime, seconds * 11.5 / 125 * 0.75 * 5 / m * 0.75);
+    near(b.supports.coverage.warfield.uptime, seconds / (1.3 * (1.5 / (1.15 * 1.1505))) * 0.1 * 2 / m);
+    near(b.supports.coverage.talTempest.uptime, seconds * 11.5 / 125 * 0.8 * 20 / m);
+    near(b.supports.coverage.tassadar.uptime, seconds * 11.5 / 150 * 5 / m);
+    near(b.supports.coverage.vessel.uptime, seconds * 11.5 / 125 * 0.8 * 15 / m);
+    near(b.supports.coverage.corruption.uptime, 15 / seconds);
     assert.equal(b.supports.coverage.flower.factor, 1.1);
-    near(b.scenario.requiredDps, 414367.3469387755 / Object.values(b.supports.coverage).reduce((a,e) => a * e.factor, 1));
+    assert.equal(b.scenario.requiredDps, scenario.calculateScenario(settings, b.profile, {}, b.supports.positiveDebuffFactor).requiredDps);
     assert.equal(run([unit('nydus', { count: 3 })]).supports.coverage.flower.factor, 1);
     const capped = run([], { buffs: { supports: { vessel: 999, corruption: 999 } } });
     assert.equal(capped.supports.coverage.vessel.uptime, 1); assert.equal(capped.supports.coverage.corruption.uptime, 1);
@@ -53,8 +54,8 @@ test('Support coverage and final battle calculations', async t => withCalculator
   await t.test('God of Time changes interval and caps at one-half', () => {
     const baseline = run([unit('amon')]);
     const b = run([unit('amon')], { buffs: { supports: { godOfTime: 1 } } });
-    near(b.supports.godOfTimeFactor, 1 - 6.5 / 98);
-    near(b.entries[0].details.interval / baseline.entries[0].details.interval, 1 - 6.5 / 98);
+    near(b.supports.godOfTimeFactor, 1 - 6.5 / 102.58203125);
+    near(b.entries[0].details.interval / baseline.entries[0].details.interval, 1 - 6.5 / 102.58203125);
     assert.equal(run([unit('amon')], { buffs: { supports: { godOfTime: 999 } } }).supports.godOfTimeFactor, 0.5);
   });
   await t.test('Overmind FD/unique damage and independent capped AD stacks', () => {
@@ -74,7 +75,7 @@ test('Support coverage and final battle calculations', async t => withCalculator
   await t.test('Artifact uses spell ticks and mana uptime, not attack interval', () => {
     const b = run([unit('artifact')]);
     const critical = 1.2; // Artifact merge gives 20 CC; base CD stat is zero.
-    const expected = 160 * 1.155 * 1.07 * critical * (36.91836734693878 * 6 / 4.5 * 216) / 94 * 0.575;
+    const expected = 160 * 1.155 * 1.07 * critical * (38.31273801410005 * 6 / 4.5 * 216) / 98.58203125 * 0.575;
     near(b.entries[0].fullDps, expected);
     near(b.entries[0].details.artifact.uptime, 0.575);
     const fast = run([unit('artifact')], { profileStats: { attackSpeed: 100000 } });

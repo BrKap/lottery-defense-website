@@ -74,7 +74,7 @@ test('Ordinary combat engine', async t => withCalculatorModules(async ({ config,
     near(calc(unit('commando-raynor')).details.speedMultiplier, 1.1505 * 1.5);
     near(calc(unit('k5-kerrigan')).details.speedMultiplier, 1.1505 * 1.75);
     near(calc(unit(), { godOfTimeFactor: 0.8 }).details.interval, 0.5 * 0.8 / 1.1505);
-    near(calc(unit(), { penetrationEnabled: true }).perUnitDps / calc().perUnitDps, 188 / 166);
+    near(calc(unit(), { penetrationEnabled: true }).perUnitDps / calc().perUnitDps, 1.130615234375);
     for (const [id, factor] of [['spec-ops-nova',0.85],['artanis',0.7],['talandar',0.7],['destroyer',0.8],['tal-mothership',0.7],['torrasque',0.55],['laser-drill',0.15]]) assert.equal(calc(unit(id)).details.damageAdjustment, factor);
   });
   await t.test('all jewel identities and approved exceptions', () => {

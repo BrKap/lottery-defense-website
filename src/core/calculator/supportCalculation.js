@@ -7,12 +7,15 @@ const countOf = (units, id) => units.filter(u => u.unitId === id).reduce((sum, u
 export function calculateExposure(scenario) {
   const { enemy, mode } = scenario;
   const lateClassic = mode === 'Classic' && enemy.round >= 200;
-  const spawned = enemy.count / (lateClassic ? 2 : 1);
-  const spawnSeconds = enemy.seconds - 27;
+  // SC2_FIXED_4096: imported fixed timing and integer original spawn counts.
+  // Lifetime/coverage formulas below remain analytical legacy estimates.
+  const spawned = enemy.spawnedCount ?? enemy.count / (lateClassic ? 2 : 1);
+  const tail = enemy.postSpawnSeconds ?? 27;
+  const spawnSeconds = enemy.spawnSeconds ?? enemy.seconds - tail;
   const spawnRate = spawned / spawnSeconds;
   const killRate = spawned / enemy.seconds;
   const netAliveGrowth = spawnRate - killRate;
-  const mobSeconds = ((netAliveGrowth + netAliveGrowth * spawnSeconds) / 2) * spawnSeconds + 27 * spawned;
+  const mobSeconds = ((netAliveGrowth + netAliveGrowth * spawnSeconds) / 2) * spawnSeconds + tail * spawned;
   const artifactLife = mobSeconds / spawned;
   const averageMobLife = artifactLife / (enemy.round >= 200 ? 2 : 1) - 1;
   return { spawned, spawnSeconds, spawnRate, killRate, netAliveGrowth, mobSeconds, artifactLife, averageMobLife, lateClassic };

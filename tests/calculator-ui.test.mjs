@@ -13,6 +13,36 @@ test('Calculator controls and shared result rendering', async t => withCalculato
   const saved = state.createDefaultCalculatorState(config);
   const noop = () => {};
   const render = (component, props) => renderToStaticMarkup(React.createElement(CalculatorConfigProvider, { value: { calculator: config } }, React.createElement(component, props)));
+  await t.test('round stats display integers without changing calculation inputs', async () => {
+    const { CreepStatsCard }=await loadModule('/src/pages/LotteryDefense/EUNA/calculator/MainSidebarCards.jsx');
+    const result=scenario.calculateScenario({...saved.calculatorSettings,round:269,difficulty:'Normal'});
+    const before=JSON.stringify(result);
+    const html=render(CreepStatsCard,{scenario:result});
+    assert.match(html,/<span>Armor<\/span><strong>1694<\/strong>/);
+    assert.match(html,/<span>Nominal duration \(game s\)<\/span><strong>79<\/strong>/);
+    assert.match(html,/<span>Spawn interval \(game ms\)<\/span><strong>952<\/strong>/);
+    assert.doesNotMatch(html,/1693\.7744140625|79\.3876953125/);
+    assert.equal(JSON.stringify(result),before);
+    assert.equal(result.enemy.armor,1693.7744140625);
+    assert.equal(result.enemy.seconds,79.3876953125);
+  });
+  await t.test('full mode stats, cap semantics and forced DT render without stale requirements', () => {
+    for (const [gameMode,round] of [['Eternal',219],['Hyper',115]]) {
+      const settings={...saved.calculatorSettings,gameMode,round};
+      const result=scenario.calculateScenario(settings);
+      const html=render(MainTab,{calculatorSettings:settings,derivedStats:{requiredDps:result.requiredDps},units:[],updateSetting:noop,activeRune:saved.runeLoadouts[0],buffs:saved.buffState,sandbox:saved.sandboxState,additionalRune:saved.additionalRuneState,scenario:result});
+      assert.match(html,/Original spawns/); assert.match(html,/Full-clear kills/); assert.match(html,/Nominal duration \(game s\)/);
+      assert.match(html,/Creep penalty threshold/); assert.match(html,/Cap-safe Required DPS/); assert.match(html,/carryover simulation/);
+      assert.match(html,/Wave average DPS \(reference\)/);
+      if(gameMode==='Hyper') assert.match(html,/boundary stats/);
+    }
+    const settings={...saved.calculatorSettings,tocMode:true,tocFloor:85,doubleTime:false};
+    const result=scenario.calculateScenario(settings);
+    const html=render(MainTab,{calculatorSettings:settings,derivedStats:{requiredDps:result.requiredDps},units:[],updateSetting:noop,activeRune:saved.runeLoadouts[0],buffs:saved.buffState,sandbox:saved.sandboxState,additionalRune:saved.additionalRuneState,scenario:result});
+    assert.equal(result.status,'supported'); assert.equal(result.enemy.count,870);
+    assert.match(html,/disabled="" checked=""/);
+    assert.doesNotMatch(html,/Enemy statistics unavailable/);
+  });
   await t.test('Main and Build Units render the same calculated entry sums with aligned columns', async () => {
     const [{ default: BuildUnitsTab }, damage, { formatCombatNumber: formatNumber }] = await Promise.all([
       loadModule('/src/pages/LotteryDefense/EUNA/calculator/tabs/BuildUnitsTab.jsx'),
@@ -74,7 +104,7 @@ test('Calculator controls and shared result rendering', async t => withCalculato
     assert.match(html, /\+2 optimized/);
   });
   await t.test('ToC replaces Round; unsupported floors cannot show a stale requirement', () => {
-    const settings = { ...saved.calculatorSettings, tocMode: true, tocFloor: 85 };
+    const settings = { ...saved.calculatorSettings, tocMode: true, tocFloor: 91 };
     const result = scenario.calculateScenario(settings);
     const html = render(MainTab, { calculatorSettings: settings, derivedStats: { requiredDps: result.requiredDps }, units: [], updateSetting: noop, activeRune: saved.runeLoadouts[0], buffs: saved.buffState, sandbox: saved.sandboxState, additionalRune: saved.additionalRuneState, scenario: result });
     assert.match(html, /ToC Floor/);

@@ -29,8 +29,8 @@ test('automatic optimizer preserves manual base, prices both currencies, and val
     assert(result.totals.totalEpOverall <= result.budget.availableEp);
     assert.equal(result.investments.rookie['atk-dmg-i'] >= 1, true);
     assert.equal(result.investments.divine['sp-bank'], 1);
-    assert(result.steps.every(step => [115, 180].includes(step.wave)));
-    assert.deepEqual(result.schedule.map(row => row.wave), [115, 180]);
+    assert(result.steps.every(step => step.wave >= 1 && step.wave <= 180));
+    assert.deepEqual(result.schedule.map(row => row.wave), Array.from({length:180},(_,i)=>i+1));
     assert(result.schedule.some(row => row.wave === 115 && row.availableSp > input.settings.startingSp));
     assert(result.nextUpgrade);
     assert.equal(result.nextUpgrade.wave, result.steps[0].wave);
@@ -125,13 +125,14 @@ test('each supported wave uses its own enemy scenario', async () => {
       baseInvestments: saved.baseInvestments, maxEvaluations: 100,
     });
     assert.equal(result.status, 'supported', result.reason);
-    assert.deepEqual(result.schedule.map(checkpoint => checkpoint.wave), [115, 180]);
+    assert.deepEqual(result.schedule.map(checkpoint => checkpoint.wave), Array.from({length:180},(_,i)=>i+1));
     assert.notEqual(result.schedule[0].projectedCoverage, result.baseScore.coverage);
-    assert.equal(result.schedule[1].projectedCoverage, result.finalScore.coverage);
+    if (!result.schedule.at(-1).notEvaluated) assert.equal(result.schedule.at(-1).projectedCoverage, result.finalScore.coverage);
+    else assert(result.bounded);
   });
 });
 
-test('missing selected-wave enemy data uses earlier checkpoints and keeps later bank payouts unspent', async () => {
+test('full round coverage uses the selected wave and rejects out-of-range targets', async () => {
   await withCalculatorModules(async ({ config, state, loadModule, helpers }) => {
     const { optimizeUpgrades } = await loadModule('/src/core/calculator/automaticUpgradeOptimizer.js');
     const saved = state.createDefaultCalculatorState(config);
@@ -148,14 +149,15 @@ test('missing selected-wave enemy data uses earlier checkpoints and keeps later 
     const result = await optimizeUpgrades(input);
     assert.equal(result.status, 'supported', result.reason);
     assert.equal(result.selectedWave, 120);
-    assert.equal(result.scoredThroughWave, 115);
-    assert.deepEqual(result.schedule.map(checkpoint => checkpoint.wave), [115]);
-    assert.equal(result.schedule[0].availableSp, 23000);
+    assert.equal(result.scoredThroughWave, 120);
+    assert.deepEqual(result.schedule.map(checkpoint => checkpoint.wave), Array.from({length:120},(_,i)=>i+1));
+    assert.equal(result.schedule[0].availableSp, 12000);
+    assert.equal(result.schedule.at(-1).availableSp,24000);
     assert.equal(result.budget.availableSp, 24000);
-    assert.equal(result.finalScore.coverage, result.schedule[0].projectedCoverage);
+    if (!result.schedule.at(-1).notEvaluated) assert.equal(result.finalScore.coverage, result.schedule.at(-1).projectedCoverage);
     assert.equal(result.steps.length, 0);
 
-    const beforeFirstWave = await optimizeUpgrades({ ...input, settings: { ...input.settings, round: 114 } });
+    const beforeFirstWave = await optimizeUpgrades({ ...input, settings: { ...input.settings, round: 0 } });
     assert.equal(beforeFirstWave.status, 'unavailable');
     assert.match(beforeFirstWave.reason, /No enemy data/i);
     const invalidWave = await optimizeUpgrades({ ...input, settings: { ...input.settings, round: '120.5' } });
@@ -165,8 +167,8 @@ test('missing selected-wave enemy data uses earlier checkpoints and keeps later 
     const toc = await optimizeUpgrades({ ...input, settings: { ...input.settings, tocMode: true, tocFloor: 85 } });
     assert.equal(toc.status, 'supported', toc.reason);
     assert.equal(toc.selectedWave, 85);
-    assert.equal(toc.scoredThroughWave, 84);
-    assert.equal(toc.schedule.at(-1).wave, 84);
-    assert.equal(toc.schedule.some(checkpoint => checkpoint.wave === 85), false);
+    assert.equal(toc.scoredThroughWave, 85);
+    assert.equal(toc.schedule.at(-1).wave, 85);
+    assert.equal(toc.schedule.some(checkpoint => checkpoint.wave === 85), true);
   });
 });

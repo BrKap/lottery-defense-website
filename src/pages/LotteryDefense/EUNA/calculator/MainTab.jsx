@@ -29,10 +29,12 @@ export default function MainTab({
     GAME_MODES,
     TITLES,
     CLASSIC_ROUNDS,
+    HYPER_ROUNDS,
     TOC_FLOORS,
   } = calculator;
 
   const summarizedUnits = army.groups;
+  const rounds = calculatorSettings.gameMode === 'Hyper' ? HYPER_ROUNDS : CLASSIC_ROUNDS;
 
   return (
     <div className="calculator-main-layout">
@@ -82,16 +84,21 @@ export default function MainTab({
               onChange={value => updateSetting('tocFloor', Number(value))} /> : <InputField
               label="Round"
               value={calculatorSettings.round}
-              options={CLASSIC_ROUNDS.includes(calculatorSettings.round) ? CLASSIC_ROUNDS : [calculatorSettings.round, ...CLASSIC_ROUNDS]}
+              options={rounds.includes(calculatorSettings.round) ? rounds : [calculatorSettings.round, ...rounds]}
               onChange={(value) => updateSetting('round', Number(value))}
             />}
 
             <InputField
               label="Mode"
               value={calculatorSettings.gameMode}
-              onChange={(value) => updateSetting('gameMode', value)}
+              onChange={(value) => {
+                updateSetting('gameMode', value);
+                if (value === 'Hyper' && calculatorSettings.round > 115) updateSetting('round', 114);
+              }}
               options={GAME_MODES}
             />
+            <CheckboxField label="Double Time (DT)" checked={calculatorSettings.tocMode || calculatorSettings.doubleTime !== false}
+              disabled={calculatorSettings.tocMode} onChange={checked => updateSetting('doubleTime', checked)} />
 
             <NumberField
               label="XP"
@@ -143,6 +150,9 @@ export default function MainTab({
           {buffs?.selectUpgradeEnabled && <p role="status">Select Upgrade+ is enabled, but its unknown effect is excluded from these results.</p>}
           {additionalRune?.enabled && additionalRune.method && additionalRune.method !== 'manual' && <p role="status">The selected Additional Rune method is awaiting a formula and contributes no stats.</p>}
           {scenario.status !== 'supported' && <p role="status">{scenario.reason}</p>}
+          {scenario.rollingMode && <p role="status">Creeps carry over between waves. Lives are checked every {scenario.enemy.capCheckSeconds} game seconds at {scenario.enemy.creepCap} creeps or more. Cap-safe DPS and army coverage are pending the carryover simulation.</p>}
+          {scenario.enemy?.dataConfidence === 'end-boundary-unverified' && <p role="status">Hyper ends around round 115. These boundary stats are available, but its playable timing still needs confirmation.</p>}
+          {scenario.status === 'supported' && !scenario.rollingMode && <p>Required DPS estimates ideal clearing before cleanup. Travel, overkill and attack timing can increase the actual requirement.</p>}
           {scenario.mode === 'ToC' && <p>ToC uses floor {scenario.enemy.round}, torment {scenario.torment.label}, and 2.5% damage inflicted. Classic difficulty and torment selections are inactive.</p>}
           <div className="overview-stats-grid">
             <StatTile
@@ -151,10 +161,11 @@ export default function MainTab({
               accent="blue"
             />
             <StatTile
-              label="Required DPS"
+              label={scenario.rollingMode ? 'Cap-safe Required DPS' : 'Required DPS'}
               value={derivedStats.requiredDps === null ? 'Unavailable' : formatNumber(derivedStats.requiredDps)}
               accent="gold"
             />
+            {scenario.rollingMode && <StatTile label="Wave average DPS (reference)" value={formatNumber(scenario.waveAverageDps)} accent="gold" />}
             <StatTile
               label="Primary coverage %"
               value={formatNumber(army.primaryCoverage)}
